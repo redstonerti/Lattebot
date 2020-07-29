@@ -12,7 +12,7 @@ Ctrl + K + J
 */
 const Discord = require('discord.js');
 const bot = new Discord.Client();
-const token = 'NzIyNDY2NzY1NTEwMTQ4MTc3.Xujfmw.Aqo6evTXfOWHsuwT22mE0ubmp2Y';
+const token = 'NzIyNDY2NzY1NTEwMTQ4MTc3.Xujfmw.DPxFzTa28pIJXL4uWSTIsMdXku0';
 const PREFIX = ';';
 const version = '1.2';
 const fs = require('fs');
