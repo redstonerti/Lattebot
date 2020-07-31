@@ -64,8 +64,8 @@ module.exports = {
             seed_info = `\n🌿 Seed: ${funcs.ConvertToUnit(seed, 'K M B')}`;
             grinder_info = `\n🗜️ Grinder: ${funcs.ConvertToUnit(grinder, 'K M B')}`;
             farm_info = `\n🚜 Farm: ${funcs.ConvertToUnit(farm, 'K M B')} (${funcs.ConvertToUnit(planted_farm, `K M B`)} planted)`;
-            next_corn_harvest_info = `Next full corn harvest: \`${funcs.ConvertToUnit(Math.max(last_harvested + 10000 - time, 0), `K M B`)}\` seconds`;
-            next_milk_harvest_info = `Next full milk harvest: \`${funcs.ConvertToUnit(Math.max(last_milked + 10000 - time, 0), `K M B`)}\` seconds`;
+            next_corn_harvest_info = `Next full corn harvest: \`${funcs.SecToHMS(Math.max(last_harvested + 10000 - time, 0))}\``;
+            next_milk_harvest_info = `Next full milk harvest: \`${funcs.SecToHMS(Math.max(last_milked + 10000 - time, 0))}\``;
         }
         funcs.Say(message, `${message.author.username}'s Profile`, `
 💰 Balance: ${funcs.ConvertToUnit(balance, 'K M B')} milkesh

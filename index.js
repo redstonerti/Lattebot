@@ -9,12 +9,14 @@ Ctrl + K + 1
 Open all:
 Ctrl + K + J
 
+Milanote referral link: https://www.milanote.com/refer/rcBwWuNB5PWEzbiijF
+Milanote page: https://app.milanote.com/1JIXFg1A7IWS4Z?p=RPYHur6CMy1
 */
 const Discord = require('discord.js');
 const bot = new Discord.Client();
 const token = 'NzIyNDY2NzY1NTEwMTQ4MTc3.Xujfmw.DPxFzTa28pIJXL4uWSTIsMdXku0';
 const PREFIX = ';';
-const version = '1.2';
+const version = '1.2.1';
 const fs = require('fs');
 const upgrade_list_length = 2;
 bot.commands = new Discord.Collection();
@@ -41,6 +43,7 @@ bot.on('ready', () =>
 });
 bot.on('message', message =>
 {
+    message.content = message.content.toLowerCase();
     if (message.author.username === 'Lattebot' || message.author.username === 'Tester bot') return;
     let time = Math.round(new Date().getTime() / 1000);
     let id = message.author.id;
@@ -65,7 +68,6 @@ bot.on('message', message =>
                 InsertData.finalize();
                 db.close();
                 MainSystem(message, db,/*id*/id, time,/*name*/ name,/*balance*/ 0,/*milk*/ 0,/*cow*/ 0,/*last_milked*/ 0,/*milk_storage*/ 0,/*last_worked*/ 0,/*work_times*/ 0,/*land*/ 40,/*pasteurizerr*/0,/*battery*/0,/*watts*/ 0,/*solar_panel*/ 0,/*wind_turbine*/ 0,/*last_powered*/ 0,/*clean_milk*/ 0,/*animal_feed*/ 0,/*upgrades*/'0 0 0',/*seed*/0,/*corn*/0,/*farm*/0,/*grinder*/0,/*last_harvested*/0,/*corn_storage*/0,/*planted_farm*/0,/*seed_storage*/0);
-                console.log(name);
             }
 
         }
@@ -307,7 +309,9 @@ function MainSystem(message, db, id, time, name, balance, milk, cow, last_milked
             `grind`,
             `harvest`,
             `plant`,
-            `donate`
+            `donate`,
+            `suggest`,
+            `buggify`
         ];
     if (message.content[0] != ';')
         return null;
@@ -395,7 +399,11 @@ exports.GetItem = function (message, args, ItemNames)
     var IsMax = false;
     for (var count = 0; count < args.length; count++)
     {
-        if (isNaN(Number(args[count])) === false)
+        if (exports.ConvertToNumber(message, args[count]) === null)
+        {
+            return null;
+        }
+        if (isNaN(exports.ConvertToNumber(message, args[count])) === false)
         {
             NumberPosition = count;
         }
@@ -420,7 +428,7 @@ exports.GetItem = function (message, args, ItemNames)
     else
     {
         item = message.content.substring(args[0].length + args[1].length + 3);
-        number = args[1];
+        number = exports.ConvertToNumber(message, args[1]);
     }
     var NumberInList = 0;
     var ResultList = exports.AutoFill(message, item, ItemNames, true);
@@ -559,7 +567,7 @@ exports.ConvertToUnit = function (number, units)
     {
         if (number / Divider >= 1)
         {
-            number = (number / 1000).toFixed(2);
+            number = (number / 1000).toFixed(3);
             End += 1;
         }
         else
@@ -571,25 +579,31 @@ exports.ConvertToUnit = function (number, units)
     {
         number = 0;
     }
-    var NumberString = `${number}${SeparatedUnits[End]}`;
+    var HasFixed = false;
+    number = Number(number);
+    for (var count = 3; count > 0; count--)
+    {
+        var decimal = number.toFixed(count).toString();
+        decimal = decimal.substring(decimal.length - 1);
+        if (decimal != '0')
+        {
+            number = number.toFixed(count);
+            HasFixed = true;
+            break;
+        }
+    }
+    if (HasFixed === false)
+    {
+        number = number.toFixed(0);
+    }
     if (End >= 0)
     {
-        return NumberString;
+        return `${number}${SeparatedUnits[End]}`;
     }
-    var hundreadth = number.toFixed(2).toString();
-    hundreadth = hundreadth.substring(hundreadth.length - 1);
-    if (hundreadth != '0')
+    else
     {
-        return number.toFixed(2);
+        return number;
     }
-    var tenth = number.toFixed(1).toString();
-    tenth = tenth.substring(tenth.length - 1);
-    if (tenth != '0')
-    {
-        return number.toFixed(1);
-    }
-    number = number.toFixed(0);
-    return number;
 }
 exports.AutoFill = function (message, phrase, PhraseList, ShowList)
 {
@@ -698,4 +712,56 @@ exports.GetUpgraded = function (upgrades, upgrade_slot, amount)
     }
     new_upgrade_list = new_upgrade_list.substring(1);
     return new_upgrade_list.toString();
+}
+exports.SecToHMS = function (sec_amount)
+{
+    var hour_min_sec = ``;
+    var hours = Math.floor(sec_amount / 3600);
+    if (hours > 0)
+    {
+        hour_min_sec = hour_min_sec + hours.toString() + `h `;
+    }
+    sec_amount = sec_amount - hours * 3600;
+    var minutes = Math.floor(sec_amount / 60);
+    if (minutes > 0)
+    {
+        hour_min_sec = hour_min_sec + minutes.toString() + `m `;
+    }
+    sec_amount = sec_amount - minutes * 60;
+    sec_amount = Math.floor(sec_amount);
+    hour_min_sec = hour_min_sec + sec_amount.toString() + `s`;
+    return hour_min_sec;
+}
+exports.ConvertToNumber = function (message, number_with_unit)
+{
+    var number = Number(number_with_unit.substring(0, number_with_unit.length - 1));
+    if (number < 0)
+    {
+        message.channel.send(`I don't like negative numbers. They always bring me down. :(`);
+        return null;
+    }
+    if (isNaN(Number(number_with_unit)) === false)
+    {
+        return number_with_unit;
+    }
+    if (isNaN(Number(number_with_unit.substring(0, number_with_unit.length - 1))) == true)
+    {
+        return NaN;
+    }
+    var unit = number_with_unit.substring(number_with_unit.length - 1).toUpperCase();
+    var Units =
+    {
+        'K': 1000,
+        'M': 1000000,
+        'B': 1000000000,
+        'T': 1000000000000
+    };
+    var multiplier = Units[unit];
+    if (multiplier === undefined)
+    {
+        message.channel.send(`\`${unit}\` is not a unit`);
+        return NaN;
+    }
+    number = number * multiplier;
+    return number;
 }

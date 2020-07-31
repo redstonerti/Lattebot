@@ -10,24 +10,21 @@ module.exports = {
         {
             //Commands
             'version': `**Version: ${vars['version']}**
+This is a medium sized QoL update.
+You can now buy and sell things by adding units after them. For example, ;buy 10000 cow can now be written as ;buy 10K cow
+There are 2 new commands, buggify and suggest. Buggify is for bugs and suggest for suggestions.
+Just write ;suggest and whatever you write after that will be sent to me.
+The same applies to ;buggify.
 
-            This is the biggest update in the history of lattebot. It's mostly content but there is a bit of QoL too.
+Also, now all numbers no matter how big or small will only show decimals when needed.
+For example, if you have exactly 1 million milkesh, the number will be 1M not 1.00M
+If you have 1001000 milkesh, it will be written as 1.001M
 
-            Content:
-            Tiers: you start at tier 0 and upgrade your tier to unlock items and upgrades
-            Upgrades: Does this really need explaining?
-            The shop now has two variations, item shop and upgrades shop. You now have to type either ;shop items or ;shop upgrades. This can obviously be shortened down to something small like ;sh i or ;sh u.
-            Farming corn in order to to grind it into animal feed that can be fed to cows in order to increase milk production
+There is also now a roadmap in milanote. Type ;help roadmap to get access to it.
 
-            QoL:
-            Numbers from 0 to 1000 now only show decimals when needed
-            when you type something that needs a second argument, it now gives you the list of possible arguments.
-            A bunch of other stuff that i can't remember
+If you type ;help, there will be a direct link to add lattebot to your server under Misc -> Lattebot related
 
-            Also, i have made a ko-fi page in order to aquire servers
-            You can go there with the ;donate command
-
-            :)`,
+:)`,
 
 
             'clear': `**Syntax:**
@@ -116,6 +113,8 @@ work
 **Description:**
 Every time you work, you get milkesh. You start out with 40, and every 5 times you get a 20 milkesh raise. The maximum amount of money you can get is 400 / shift and you can work every 1 minute.
 `,
+
+
             'clean': `**Syntax:**
 clean
 
@@ -223,6 +222,11 @@ It tries to guess ur shit
 ;he au = help autofill
 ;bu m mi= buy max milk`,
 
+
+            //Lattebot related
+            'roadmap': `You can sign up for milanote [here](https://www.milanote.com/refer/rcBwWuNB5PWEzbiijF "big brain")
+and look at the milanote roadmap [here](https://app.milanote.com/1JIXFg1A7IWS4Z?p=RPYHur6CMy1 "big brain")`,
+
             //Random shit
             'bok choy': `Bok choy(American English), pak choi(British English), or pok choi(Brassica rapa subsp.chinensis) is a type of Chinese cabbage.Chinensis varieties do not form heads and have green leaf blades with lighter bulbous bottoms instead, forming a cluster reminiscent of mustard greens.Chinensis varieties are popular in southern China and Southeast Asia.Being winter- hardy, they are increasingly grown in Northern Europe.Now considered a subspecies of Brassica rapa, this group was originally classified as its own species under the name Brassica chinensis by Carl Linnaeus.[citation needed]They are a member of the family of Brassicaceae or Cruciferae, also commonly known as the mustards, the crucifers, or the cabbage family.
 
@@ -264,6 +268,7 @@ It tries to guess ur shit
                 `farm`,
                 `tier`,
                 `upgrade`,
+                `roadmap`,
             ];
         var message = vars['message'];
         var args = vars['args'];
@@ -277,19 +282,21 @@ It tries to guess ur shit
             item_help_info = item_help_info.substring(2);
             funcs.Say(message, '',
                 `
-------------------------**COMMANDS**------------------------
+-------------------**COMMANDS**------------------
 
-**General** \`clear\`, \`deport\`, \`undeport\`, \`hug\`
+**General** \`clear\`, \`deport\`, \`undeport\`, \`hug\`, \`donate\`, \`suggest\`, \`buggify\`
 
 **Economy** \`give\`, \`beg\`, \`shop\`, \`buy\`, \`sell\`, \`milk\`, \`work\`, \`clean\` \`tier\`, \`upgrade\`
 
-------------------------**ITEMS**------------------------
+-----------------------**ITEMS**-----------------------
 
 ${item_help_info}
 
-------------------------**MISC**------------------------
+-----------------------**MISC**------------------------
 
 **Guides** \`how to get a gf\`, \`starting guide\`, \`autofill\`
+
+**Lattebot related** [Add to your server](https://discord.com/oauth2/authorize?client_id=722466765510148177&scope=bot&permissions=8 "big brain"), \`roadmap\` 
 
 **Random stuff** \`bok choy\`, \`version\`
 `);

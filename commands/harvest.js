@@ -27,7 +27,7 @@ module.exports = {
             message.channel.send(`You don't have any farms`);
             return;
         }
-        if (planted_farm < 0.01)
+        if (planted_farm < 0.01 && corn_storage < 0.01 && seed_storage < 0.01)
         {
             message.channel.send(`None of your farms are planted`);
             return;
