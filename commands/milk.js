@@ -11,8 +11,6 @@ module.exports = {
         var cow = vars['cow'];
         var milk = vars['milk'];
         var time = vars['time'];
-        var milk_storage = vars['milk storage'];
-        var upgrades = vars['upgrades'];
         var last_milked = vars['last milked'];
         var animal_feed = vars['animal feed'];
         if (cow === 0)
@@ -21,10 +19,10 @@ module.exports = {
             return;
         }
         var milk_time = Math.min(time - last_milked, 10000);
-        var MilkAddition = milk_storage + cow * (milk_time) / 100;
+        var MilkAddition = cow * (milk_time) / 100;
         var FeedAddition = Math.min(MilkAddition, animal_feed);
         var starting_feed_addition = FeedAddition;
-        if (funcs.GetUpgrade(upgrades, 1, db, id) === 1)
+        if (funcs.GetUpgrade(1) === 1)
         {
             FeedAddition = FeedAddition * 2;
         }
@@ -37,6 +35,6 @@ module.exports = {
             FeedInfo2 = `\n\`total: ${funcs.ConvertToUnit(animal_feed - starting_feed_addition, `K M B`)}\` animal feed`;
         }
         message.channel.send(`\`got: ${funcs.ConvertToUnit(MilkAddition, `K M B`)}\` milk${FeedInfo1}\n\`total: ${funcs.ConvertToUnit(milk + MilkAddition, `K M B`)}\` milk${FeedInfo2}`);
-        db.run(`UPDATE data SET milk = ?, last_milked = ?, milk_storage = ?, animal_feed = ? WHERE id = ?`, [(milk + MilkAddition).toFixed(2), time, 0, animal_feed - starting_feed_addition, id]);
+        db.run(`UPDATE data SET milk = ?, last_milked = ?, animal_feed = ? WHERE id = ?`, [(milk + MilkAddition).toFixed(2), time, animal_feed - starting_feed_addition, id]);
     }
 }

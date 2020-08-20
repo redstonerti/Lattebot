@@ -119,7 +119,7 @@ module.exports = {
                 }
                 else if (ShopType === 'upgrades')
                 {
-                    var CurrentLevel = funcs.GetUpgrade(upgrades, upgrade['slot'], db, id);
+                    var CurrentLevel = funcs.GetUpgrade(upgrade['slot']);
                     var Prices = upgrade['prices'];
                     var PriceOrCompleted = ``;
                     if (CurrentLevel < Prices.length)

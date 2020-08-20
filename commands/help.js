@@ -6,23 +6,17 @@ module.exports = {
     execute(vars)
     {
         var ItemNames = vars['ItemNames'];
+        var QuestNames = vars['QuestNames'];
         const Info =
         {
             //Commands
             'version': `**Version: ${vars['version']}**
-This is a medium sized QoL update.
-You can now buy and sell things by adding units after them. For example, ;buy 10000 cow can now be written as ;buy 10K cow
-There are 2 new commands, buggify and suggest. Buggify is for bugs and suggest for suggestions.
-Just write ;suggest and whatever you write after that will be sent to me.
-The same applies to ;buggify.
+This is a medium sized content update.
 
-Also, now all numbers no matter how big or small will only show decimals when needed.
-For example, if you have exactly 1 million milkesh, the number will be 1M not 1.00M
-If you have 1001000 milkesh, it will be written as 1.001M
-
-There is also now a roadmap in milanote. Type ;help roadmap to get access to it.
-
-If you type ;help, there will be a direct link to add lattebot to your server under Misc -> Lattebot related
+There are now quests that can be completed to get extra money (small minigames)
+You can now access the roadmap by typing ;help roadmap
+The bot will now welcome anyone that comes in the server
+A bunch of other small stuff that i don't remember.
 
 :)`,
 
@@ -176,6 +170,16 @@ Milk is produced by cows and it can be either sold or turned into clean milk to 
             'farm': `Farms produce corn and seeds. They need to be replanted every time you harvest them but they give you more 1.2x the seeds you used to plant them. If you haven't waited until the full harvest, you can harvest and replant a part of your farms.`,
 
 
+            //Quests
+
+            'higher lower game': `Lattebot thinks of a natural number from 1 - 10000 and you have to guess it. He will help you by telling you if your guess was higher or lower than his number.`,
+
+
+            'punch an elderly person': `Feeling vicious? Punch an elderly for a massive prize!`,
+
+
+            'find the button': `You are an expressionless face on a grid. There are a few emojis in there too. Every time you move or search, one emoji will be active. In every game there is a different pattern of what emojis will be active. Your goal is to search an emoji while it's active.`,
+
             //Guides
             'starting guide':
                 `
@@ -269,6 +273,9 @@ and look at the milanote roadmap [here](https://app.milanote.com/1JIXFg1A7IWS4Z?
                 `tier`,
                 `upgrade`,
                 `roadmap`,
+                `higher lower game`,
+                `find the button`,
+                `punch an elderly person`,
             ];
         var message = vars['message'];
         var args = vars['args'];
@@ -279,7 +286,13 @@ and look at the milanote roadmap [here](https://app.milanote.com/1JIXFg1A7IWS4Z?
             {
                 item_help_info = item_help_info + `, \`${ItemNames[count]}\``;
             }
+            var quest_help_info = ``;
+            for (var count = 0; count < QuestNames.length; count++)
+            {
+                quest_help_info = quest_help_info + `, \`${QuestNames[count]}\``;
+            }
             item_help_info = item_help_info.substring(2);
+            quest_help_info = quest_help_info.substring(2);
             funcs.Say(message, '',
                 `
 -------------------**COMMANDS**------------------
@@ -291,6 +304,10 @@ and look at the milanote roadmap [here](https://app.milanote.com/1JIXFg1A7IWS4Z?
 -----------------------**ITEMS**-----------------------
 
 ${item_help_info}
+
+-----------------------**QUESTS**-----------------------
+
+${quest_help_info}
 
 -----------------------**MISC**------------------------
 

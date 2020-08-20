@@ -20,7 +20,7 @@ module.exports = {
             funcs.Say(message, `Clear command`, `**Syntax**: clear + number of messages\n**Description**: The clear command simply deletes the amount of messages specified`);
             return;
         }
-        args[1] = Number(args[1]);
+        args[1] = Number(args[1]) + 1;
         if (isNaN(args[1]))
         {
             message.channel.send(`That's not a number`);

@@ -19,7 +19,7 @@ module.exports = {
         var last_powered = vars['last powered'];
         var MessageInfo = ``;
         var AmountPasteurized = 0;
-        watts = funcs.CalcPower(battery, solar_panel, wind_turbine, watts, time, last_powered, id, db);
+        watts = funcs.CalcPower();
         if (milk <= 0)
         {
             message.channel.send(`You don't have any milk`);

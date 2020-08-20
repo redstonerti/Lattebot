@@ -11,10 +11,8 @@ module.exports = {
         var id = vars['id'];
         var time = vars['time'];
         var balance = vars['balance'];
-        var last_milked_storage = vars['last milked storage'];
         var milk = vars['milk'];
         var cow = vars['cow'];
-        var last_harvested_storage = vars['last harvested storage'];
         var corn_storage = vars['corn storage'];
         var planted_farm = vars['planted farm'];
         var seed_storage = vars['seed storage'];
@@ -27,8 +25,10 @@ module.exports = {
         var Items = vars['Items'];
         var CowMax = land * 5;
         var upgrades = vars['upgrades'];
-        var ItemStuff = funcs.GetItem(message, args, ItemNames);
-        var MyTier = funcs.GetUpgrade(upgrades, 0, db, id);
+        var seed = vars['seed'];
+        var corn = vars['corn'];
+        var ItemStuff = funcs.GetItem();
+        var MyTier = funcs.GetUpgrade(0);
         if (ItemStuff === null)
         {
             return;
@@ -116,16 +116,5 @@ module.exports = {
         }
         db.run(`UPDATE data SET ${item.replace(' ', '_')} = ? WHERE id = ?`, [(CurrentItemAmount + amount).toFixed(2), id]);
         db.run(`UPDATE data SET balance = ? WHERE id = ?`, [(balance - total).toFixed(2), id]);
-        if (item === `cow`)
-        {
-            db.run(`UPDATE data SET milk_storage = ?, last_milked = ? WHERE id = ?`, [(milk_storage + CurrentItemAmount * (time - last_milked) / 100).toFixed(2), time, id]);
-        }
-        else if (item === `farm`)
-        {
-            var corn_harvested = Math.floor((Math.min(time - last_harvested, 10000)) * planted_farm / 100);
-            var new_planted_farm = planted_farm - corn_harvested / 100;
-            var seeds_gained = Math.floor(corn_harvested * 1.2);
-            db.run(`UPDATE data SET last_harvested = ?, planted_farm = ?, corn_storage = ?, seed_storage = ? WHERE id = ?`, [time, new_planted_farm, corn_storage + corn_harvested, seed_storage + seeds_gained, id]);
-        }
     }
 }

@@ -19,7 +19,7 @@ module.exports = {
         var land = vars['land'];
         var Items = vars['Items'];
         var CowMax = land * 5;
-        var ItemStuff = funcs.GetItem(message, args, ItemNames);
+        var ItemStuff = funcs.GetItem();
         if (ItemStuff === null)
         {
             return;

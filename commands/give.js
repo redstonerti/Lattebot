@@ -70,8 +70,8 @@ module.exports = {
                             if (row === undefined)
                             {
                                 console.log(`row was undefined`);
-                                let InsertData = db.prepare(`INSERT INTO data VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`);
-                                InsertData.run(PersonWithRequestedName.id, PersonWithRequestedName.user.tag, (AmountToTransfer).toFixed(2),/*milk*/ 0,/*cow*/ 0,/*last_milked*/ 0,/*milk_storage*/ 0,/*last_worked*/ 0,/*work_times*/ 0,/*land*/ 40,/*pasteurizerr*/0,/*battery*/0,/*watts*/ 0,/*solar_panel*/ 0,/*wind_turbine*/ 0,/*last_powered*/ 0,/*clean_milk*/ 0,/*animal_feed*/ 0,/*upgrades*/'0 0 0',/*seed*/0,/*corn*/0,/*farm*/0,/*grainery*/0,/*last_harvested*/0,/*corn_storage*/0,/*planted_farm*/0,/*seed_storage*/0);
+                                let InsertData = db.prepare(`INSERT INTO data VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`);
+                                InsertData.run(PersonWithRequestedName.id, PersonWithRequestedName.user.tag, (AmountToTransfer).toFixed(2),/*milk*/ 0,/*cow*/ 0,/*last_milked*/ 0,/*last_worked*/ 0,/*work_times*/ 0,/*land*/ 40,/*pasteurizerr*/0,/*battery*/0,/*watts*/ 0,/*solar_panel*/ 0,/*wind_turbine*/ 0,/*last_powered*/ 0,/*clean_milk*/ 0,/*animal_feed*/ 0,/*upgrades*/'0 0 0',/*seed*/0,/*corn*/0,/*farm*/0,/*grainery*/0,/*last_harvested*/0,/*planted_farm*/0,/*last_quested*/0);
                                 InsertData.finalize();
                                 db.close();
                                 db.run(`UPDATE data SET balance = ? WHERE id = ?`, [(balance - AmountToTransfer).toFixed(2), id]);
