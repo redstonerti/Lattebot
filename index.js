@@ -14,7 +14,7 @@ Milanote page: https://app.milanote.com/1JIXFg1A7IWS4Z?p=RPYHur6CMy1
 */
 const Discord = require('discord.js');
 const bot = new Discord.Client();
-const token = 'NzIyNDY2NzY1NTEwMTQ4MTc3.Xujfmw.DPxFzTa28pIJXL4uWSTIsMdXku0';
+const { token } = require("./token.json");
 const PREFIX = ';';
 const version = '1.2.2';
 const fs = require('fs');
@@ -27,6 +27,7 @@ const { clear, timeStamp } = require('console');
 const sqlite = require('sqlite3').verbose();
 const Canvas = require('canvas');
 const { EOPNOTSUPP } = require('constants');
+const TIME_OF_RESPECT = [20, 00, 00];
 var p_vars;
 var vars;
 var Items =
@@ -180,8 +181,8 @@ bot.on('ready', () =>
             name: 'Prefix is ;',
         }
     })
+    PayRespects();
     QuestNames = exports.GetPropertyNames(Quests);
-    //console.log(bot.guilds.fetch('id'));
     //db.run(`UPDATE data SET last_quested = ?`, [0]);
 });
 bot.on('guildMemberAdd', async member =>
@@ -220,12 +221,93 @@ I hope you get what you deserve...
 
 *Yeets body off cliff*`, attachment);
 });
+bot.on('guildMemberRemove', async member =>
+{
+    var guild = member.guild;
+    var id = guild.id;
+    let db = new sqlite.Database('./database.db', sqlite.OPEN_READWRITE);
+    let query = `SELECT * FROM servers WHERE id = ?`;
+    var dead_people = '';
+    var promise = new Promise((resolve) =>
+    {
+        db.get(query, [id], (err, row) =>
+        {
+            if (err)
+            {
+                console.log(err);
+                resolve(null);
+                return;
+            }
+            if (row === undefined)
+            {
+                console.log(`row was undefined`);
+                let InsertData = db.prepare(`INSERT INTO servers VALUES(?,?,?)`);
+                InsertData.run(/*id*/id, /*name*/guild.name, /*dead_people*/'');
+                InsertData.finalize();
+                db.close();
+                resolve('');
+            }
+            else
+            {
+                resolve(row.dead_people);
+            }
+        });
+    });
+    dead_people = await promise;
+    var People = '';
+    if (dead_people.length > 0)
+    {
+        People = dead_people.split(' | ');
+    }
+    var member_id = member.id;
+    var is_on_list = false;
+    for (var count = 0; count < People.length; count++)
+    {
+        var Properties = People[count].split(' ');
+        var person_id = Properties[0];
+        if (person_id === member_id)
+        {
+            is_on_list = true;
+        }
+    }
+    if (is_on_list === false)
+    {
+        var new_dead = '';
+        if (dead_people.length > 0)
+        {
+            new_dead += ' | ';
+        }
+        new_dead += member.id;
+        new_dead += ' ';
+        new_dead += member.user.username;
+        new_dead += ' ';
+        new_dead += new Date().getTime();
+        db.run(`UPDATE servers SET dead_people = ? where id = ?`, [dead_people + new_dead, id]);
+    }
+});
+bot.on('guildCreate', async guild =>
+{
+    let db = new sqlite.Database('./database.db', sqlite.OPEN_READWRITE);
+    let InsertData = db.prepare(`INSERT INTO servers VALUES(?,?,?)`);
+    InsertData.run(/*id*/guild.id, /*name*/guild.name, /*dead_people*/'');
+    InsertData.finalize();
+    db.close();
+});
+bot.on('guildDelete', async guild =>
+{
+    let db = new sqlite.Database('./database.db', sqlite.OPEN_READWRITE);
+    db.run(`DELETE from servers WHERE id = ?`, [guild.id]);
+});
 bot.on('message', message =>
 {
+    if (message.content === ';leave')
+    {
+        bot.emit('guildMemberRemove', message.member);
+    };
     //console.log(message.guild);
     var channel_name = message.channel.name;
-    if (channel_name != 'testing' && token === 'NzM4NzYxMDYzNjkyMjM4ODg4.XyQm2w.qC9_uJwKQd7H8V_GjwKE7EQYw-E') return;
-    if (channel_name === 'testing' && token === 'NzIyNDY2NzY1NTEwMTQ4MTc3.Xujfmw.DPxFzTa28pIJXL4uWSTIsMdXku0') return;
+    if (channel_name != 'testing' && bot.user.username === 'Tester bot') return;
+    if (channel_name === 'testing' && bot.user.username === 'Lattebot') return;
     if (message.author.username === 'Lattebot' || message.author.username === 'Tester bot') return;
     if (channel_name === 'the-letter-m') 
     {
@@ -431,7 +513,66 @@ function Mify(message)
 }
 function PayRespects()
 {
-
+    let db = new sqlite.Database('./database.db', sqlite.OPEN_READWRITE);
+    let query = `SELECT CAST(id AS TEXT), CAST(dead_people AS TEXT) FROM servers`;
+    var time = new Date().getTime();
+    setTimeout(function () 
+    {
+        db.all(query, [], (err, row) =>
+        {
+            if (err)
+            {
+                console.log(err);
+                return;
+            }
+            var guilds = bot.guilds.cache;
+            for (var count = 0; count < row.length; count++)
+            {
+                var guild_id = row[count]['CAST(id AS TEXT)'].toString();
+                var guild = guilds.get(guild_id);
+                var channel = guild.channels.cache.find(ch => ch.name === 'graveyard');
+                if (channel)
+                {
+                    var message = ``;
+                    var dead_people = row[count]['CAST(dead_people AS TEXT)'].toString();
+                    var People = '';
+                    if (dead_people.length > 0)
+                    {
+                        People = dead_people.split(' | ');
+                    }
+                    for (var count = 0; count < People.length; count++)
+                    {
+                        var person = People[count].split(' ');
+                        var days_gone = Math.floor((time - person[person.length - 1]) / 84000000);
+                        var person_name = ``;
+                        var days_or_day = ``;
+                        for (var scount = 1; scount < person.length - 1; scount++)
+                        {
+                            person_name += `${person[scount]} `;
+                        }
+                        person_name = person_name.substring(0, person_name.length - 1);
+                        if (days_gone > 0)
+                        {
+                            if (days_gone > 1)
+                            {
+                                days_or_day = `days`;
+                            }
+                            else
+                            {
+                                days_or_day = `day`;
+                            }
+                            message += `Rip **\`${person_name}\`**. It's been \`${days_gone}\` ${days_or_day} since they left us. :sob:\n`;
+                        }
+                    }
+                    if (message.length > 0)
+                    {
+                        channel.send(message);
+                    }
+                }
+            }
+        });
+        PayRespects();
+    }, exports.SecondsUntilTime([24, 00, 00]) * 1000 + 5000);
 }
 exports.HasAt = function (message)
 {
@@ -978,4 +1119,23 @@ exports.GetNetWoth = function ()
         }
     }
     return value;
+}
+exports.SecondsUntilTime = function ([hours, minutes, seconds])
+{
+    var current_time = new Date();
+    var difference_in_hours = (hours - current_time.getHours());
+    var difference_in_minutes = (minutes - current_time.getMinutes());
+    var difference_in_seconds = (seconds - current_time.getSeconds());
+    if (difference_in_minutes < 0)
+    {
+        difference_in_minutes += 60;
+        difference_in_hours -= 1;
+    }
+    if (difference_in_seconds < 0)
+    {
+        difference_in_seconds += 60;
+        difference_in_minutes -= 1;
+    }
+    var seconds_until_respect = difference_in_hours * 3600 + difference_in_minutes * 60 + difference_in_seconds;
+    return Math.max(0, seconds_until_respect);
 }
