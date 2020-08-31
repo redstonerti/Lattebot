@@ -16,7 +16,7 @@ const Discord = require('discord.js');
 const bot = new Discord.Client();
 const { token } = require("./token.json");
 const PREFIX = ';';
-const version = '1.2.2';
+const version = '1.2.3';
 const fs = require('fs');
 var upgrade_list_length;
 bot.commands = new Discord.Collection();
@@ -27,9 +27,14 @@ const { clear, timeStamp } = require('console');
 const sqlite = require('sqlite3').verbose();
 const Canvas = require('canvas');
 const { EOPNOTSUPP } = require('constants');
-const TIME_OF_RESPECT = [20, 00, 00];
+const { resolve } = require('path');
+const TIME_OF_RESPECT = [24, 00, 00];
 var p_vars;
 var vars;
+var DefaultVariables =
+{
+
+};
 var Items =
 {
     'milk': {
@@ -37,6 +42,7 @@ var Items =
         'sell price': 0.80,
         'tier': 0,
         'emoji': '🥛',
+        'cap': null,
         'unique attribute': ''
     },
     'clean milk': {
@@ -44,6 +50,7 @@ var Items =
         'sell price': 2.4,
         'tier': 1,
         'emoji': '🍼',
+        'cap': null,
         'unique attribute': ''
     },
     'cow': {
@@ -51,6 +58,7 @@ var Items =
         'sell price': 123,
         'tier': 0,
         'emoji': '🐄',
+        'cap': 'land * 5',
         'unique attribute': ''
     },
     'land': {
@@ -58,6 +66,7 @@ var Items =
         'sell price': 476,
         'tier': 0,
         'emoji': '⛳',
+        'cap': 200,
         'unique attribute': ''
     },
     'pasteurizer': {
@@ -65,6 +74,7 @@ var Items =
         'sell price': 209,
         'tier': 1,
         'emoji': '⚙️',
+        'cap': null,
         'unique attribute': ''
     },
     'battery': {
@@ -72,6 +82,7 @@ var Items =
         'sell price': 1904,
         'tier': 1,
         'emoji': '🔋',
+        'cap': null,
         'unique attribute': '10KW capacity'
     },
     'solar panel': {
@@ -79,6 +90,7 @@ var Items =
         'sell price': 142,
         'tier': 1,
         'emoji': '⛅',
+        'cap': null,
         'unique attribute': '0.1W / sec'
     },
     'wind turbine': {
@@ -86,6 +98,7 @@ var Items =
         'sell price': 47,
         'tier': 1,
         'emoji': '💨',
+        'cap': null,
         'unique attribute': '0.03W / sec'
     },
     'animal feed': {
@@ -93,6 +106,7 @@ var Items =
         'sell price': null,
         'tier': 2,
         'emoji': '🌾',
+        'cap': null,
         'unique attribute': ''
     },
     'corn': {
@@ -100,6 +114,7 @@ var Items =
         'sell price': null,
         'tier': 2,
         'emoji': '🌽',
+        'cap': null,
         'unique attribute': ''
     },
     'seed': {
@@ -107,6 +122,7 @@ var Items =
         'sell price': null,
         'tier': 2,
         'emoji': '🌿',
+        'cap': null,
         'unique attribute': ''
     },
     'grinder': {
@@ -114,6 +130,7 @@ var Items =
         'sell price': 742,
         'tier': 2,
         'emoji': '🗜️',
+        'cap': null,
         'unique attribute': ''
     },
     'farm': {
@@ -121,6 +138,7 @@ var Items =
         'sell price': 923,
         'tier': 2,
         'emoji': '🚜',
+        'cap': null,
         'unique attribute': ''
     },
 };
@@ -171,23 +189,49 @@ for (const file of commandFiles)
     bot.commands.set(command.name, command);
     CommandList.push(command.name);
 }
-bot.on('ready', () =>
+bot.on('ready', async () =>
 {
-    console.log('This bot is online!');
     let db = new sqlite.Database('./database.db', sqlite.OPEN_READWRITE);
-    bot.user.setPresence({
-        status: 'online',
-        activity: {
-            name: 'Prefix is ;',
+    console.log('This bot is online!');
+    bot.user.setPresence(
+        {
+            activity: {
+                name: 'prefix is ;'
+            }, status: 'online'
         }
-    })
+    )
     PayRespects();
     QuestNames = exports.GetPropertyNames(Quests);
-    //db.run(`UPDATE data SET last_quested = ?`, [0]);
+    let query = `SELECT * FROM data WHERE is_default = ?`;
+    var Row;
+    var promise = new Promise((resolve =>
+    {
+        db.get(query, [1], (err, row) =>
+        {
+            Row = row;
+            if (err)
+            {
+                console.log(err);
+                resolve(true);
+                return;
+            }
+            resolve(row);
+        });
+    }))
+    var has_error = await promise;
+    if (!has_error) 
+    {
+        console.log(`You fucking dumbass. You didn't make the default row.`);
+        return;
+    }
+    DefaultVariables = Row;
+    //db.run(`UPDATE data SET balance_settings = ?`, ['1|1']);
 });
 bot.on('guildMemberAdd', async member =>
 {
-    var channel = member.guild.channels.cache.find(ch => ch.name === 'welcome' || ch.name === 'new-members' || ch.name === 'member-log');
+    if (bot.user.username === 'Tester bot') return;
+    let db = new sqlite.Database('./database.db', sqlite.OPEN_READWRITE);
+    var channel = member.guild.channels.cache.find(ch => ch.name === 'welcome' || ch.name === 'new-members' || ch.name === 'member-log' || ch.name === 'milk-hall');
     if (!channel) return;
 
     const canvas = Canvas.createCanvas(936, 474);
@@ -223,9 +267,9 @@ I hope you get what you deserve...
 });
 bot.on('guildMemberRemove', async member =>
 {
+    let db = new sqlite.Database('./database.db', sqlite.OPEN_READWRITE);
     var guild = member.guild;
     var id = guild.id;
-    let db = new sqlite.Database('./database.db', sqlite.OPEN_READWRITE);
     let query = `SELECT * FROM servers WHERE id = ?`;
     var dead_people = '';
     var promise = new Promise((resolve) =>
@@ -284,6 +328,9 @@ bot.on('guildMemberRemove', async member =>
         new_dead += new Date().getTime();
         db.run(`UPDATE servers SET dead_people = ? where id = ?`, [dead_people + new_dead, id]);
     }
+    var channel = member.guild.channels.cache.find(ch => ch.name === 'milk-hall');
+    if (!channel) return;
+    channel.send(`:sob: ${member.user.tag} :milgodsad: is gone no-\n\n**STFU MEE6 WITH YOUR ZAML SHIT.\nWe just lost ${member.user.username} and you're over here zamling. Piss off.\nNo shit you were too zaml. Look at what you've done to them.**\n\n\n\n\n\n*h-hello? yeah i just blacked out for 20 seconds*`);
 });
 bot.on('guildCreate', async guild =>
 {
@@ -298,16 +345,12 @@ bot.on('guildDelete', async guild =>
     let db = new sqlite.Database('./database.db', sqlite.OPEN_READWRITE);
     db.run(`DELETE from servers WHERE id = ?`, [guild.id]);
 });
-bot.on('message', message =>
+bot.on('message', async message =>
 {
-    if (message.content === ';leave')
-    {
-        bot.emit('guildMemberRemove', message.member);
-    };
-    //console.log(message.guild);
+    let db = new sqlite.Database('./database.db', sqlite.OPEN_READWRITE);
     var channel_name = message.channel.name;
-    if (channel_name != 'testing' && bot.user.username === 'Tester bot') return;
-    if (channel_name === 'testing' && bot.user.username === 'Lattebot') return;
+    if (channel_name.substring(0, 6) != 'testing' && bot.user.username === 'Tester bot') return;
+    if (channel_name.substring(0, 6) === 'testing' && bot.user.username === 'Lattebot') return;
     if (message.author.username === 'Lattebot' || message.author.username === 'Tester bot') return;
     if (channel_name === 'the-letter-m') 
     {
@@ -318,41 +361,7 @@ bot.on('message', message =>
         return;
     }
     message.content = message.content.toLowerCase();
-    let time = Math.round(new Date().getTime() / 1000);
-    let id = message.author.id;
-    let name = message.author.tag;
-    let db = new sqlite.Database('./database.db', sqlite.OPEN_READWRITE);
-    let query = `SELECT * FROM data WHERE id = ?`;
-    db.get(query, [id], (err, row) =>
-    {
-        if (err)
-        {
-            console.log(err);
-            return;
-        }
-        if (row === undefined)
-        {
-            if (message.content.substring(0, 1) === ';')
-            {
-                console.log(`row was undefined`);
-                let InsertData = db.prepare(`INSERT INTO data VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`);
-
-                InsertData.run(/*id*/id,/*name*/ name,/*balance*/ 0,/*milk*/ 0,/*cow*/ 0,/*last_milked*/ 0,/*last_worked*/ 0,/*work_times*/ 0,/*land*/ 40,/*pasteurizerr*/0,/*battery*/0,/*watts*/ 0,/*solar_panel*/ 0,/*wind_turbine*/ 0,/*last_powered*/ 0,/*clean_milk*/ 0,/*animal_feed*/ 0,/*upgrades*/'0 0 0',/*seed*/0,/*corn*/0,/*farm*/0,/*grinder*/0,/*last_harvested*/0,/*planted_farm*/0,/*last_quested*/ 0);
-                InsertData.finalize();
-                db.close();
-                MainSystem(message, db,/*id*/id, time,/*name*/ name,/*balance*/ 0,/*milk*/ 0,/*cow*/ 0,/*last_milked*/ 0,/*last_worked*/ 0,/*work_times*/ 0,/*land*/ 40,/*pasteurizerr*/0,/*battery*/0,/*watts*/ 0,/*solar_panel*/ 0,/*wind_turbine*/ 0,/*last_powered*/ 0,/*clean_milk*/ 0,/*animal_feed*/ 0,/*upgrades*/'0 0 0',/*seed*/0,/*corn*/0,/*farm*/0,/*grinder*/0,/*last_harvested*/0,/*planted_farm*/0,/*last_quested*/0);
-            }
-        }
-        else
-        {
-            MainSystem(message, db, id, time, row.name, row.balance, row.milk, row.cow, row.last_milked, row.last_worked, row.work_times, row.land, row.pasteurizer, row.battery, row.watts, row.solar_panel, row.wind_turbine, row.last_powered, row.clean_milk, row.animal_feed, row.upgrades, row.seed, row.corn, row.farm, row.grinder, row.last_harvested, row.planted_farm, row.last_quested);
-        }
-    });
-})
-bot.login(token);
-function MainSystem(message, db, id, time, name, balance, milk, cow, last_milked, last_worked, work_times, land, pasteurizer, battery, watts, solar_panel, wind_turbine, last_powered, clean_milk, animal_feed, upgrades, seed, corn, farm, grinder, last_harvested, planted_farm, last_quested)
-{
-    /*if (message.content.substring(0, 15) === `i love fortnite`)
+    if (message.content.substring(0, 15) === `i love fortnite`)
     {
         message.channel.send(`${message.member.user} has been banned for saying:
 i love fortnite`);
@@ -363,7 +372,7 @@ i love fortnite`);
         message.channel.send(`${message.member.user} has been banned for saying:
 i like fortnite`);
         message.member.ban(message.member.user);
-    }*/
+    }
     if (message.content.toLowerCase().substring(0, 5) === 'send ')
     {
         if (exports.HasAt(message) === false)
@@ -394,6 +403,65 @@ i like fortnite`);
             message.channel.send(attachment);
         }
     }
+    if (message.content.substring(0, PREFIX.length) != PREFIX || message.content.substring(0, 3) === ';-;')
+        return null;
+    let time = Math.round(new Date().getTime() / 1000);
+    let id = message.author.id;
+    let name = message.author.tag;
+    let query = `SELECT * FROM data WHERE id = ?`;
+    var Variables = DefaultVariables;
+    Variables['id'] = id;
+    Variables['name'] = name;
+    Variables['is_default'] = 0;
+    var DefaultData = [];
+    var question_marks = ``;
+    var VariableNames = exports.GetPropertyNames(Variables);
+    for (var count = 0; count < Object.keys(Variables).length; count++)
+    {
+        DefaultData.push(Variables[VariableNames[count]]);
+        question_marks += `,?`;
+    }
+    question_marks = question_marks.substring(1);
+    var Row;
+    var promise = new Promise((resolve =>
+    {
+        db.get(query, [id], (err, row) =>
+        {
+            if (err)
+            {
+                console.log(err);
+                resolve(true);
+            }
+            else
+            {
+                if (row === undefined)
+                {
+                    console.log(`row was undefined`);
+                    let InsertData = db.prepare(`INSERT INTO data VALUES(${question_marks})`);
+                    InsertData.run(DefaultData);
+                    InsertData.finalize();
+                    db.close();
+                    resolve(Variables);
+                }
+                else
+                {
+                    resolve(row);
+                }
+            }
+        });
+    }))
+    var has_error = await promise;
+    if (has_error === true) 
+    {
+        return;
+    }
+    else
+    {
+        Row = has_error;
+    }
+    DefaultData[0] = 0;
+    DefaultData[1] = 0;
+    DefaultData[2] = '';
     upgrade_list_length = Object.keys(Upgrades).length;
     let args = message.content.toLowerCase().substring(PREFIX.length).split(' ');
     vars =
@@ -402,42 +470,50 @@ i like fortnite`);
         'prefix': PREFIX,
         'args': args,
         'db': db,
-        'id': id,
         'time': time,
-        'name': name,
-        'balance': balance,
-        'milk': milk,
-        'cow': cow,
-        'last milked': last_milked,
-        'last worked': last_worked,
-        'work times': work_times,
-        'land': land,
         'ItemNames': [],
         'Items': Items,
         'version': version,
-        'pasteurizer': pasteurizer,
-        'battery': battery,
-        'watts': watts,
-        'last powered': last_powered,
-        'solar panel': solar_panel,
-        'wind turbine': wind_turbine,
-        'clean milk': clean_milk,
         'command length': 0,
-        'animal feed': animal_feed,
-        'corn': corn,
-        'seed': seed,
-        'farm': farm,
-        'grinder': grinder,
-        'last harvested': last_harvested,
-        'planted farm': planted_farm,
-        'upgrades': upgrades,
         'player tier': 0,
         'Upgrades': Upgrades,
         'UpgradeNames': [],
         'Quests': Quests,
         'QuestNames': QuestNames,
-        'last quested': last_quested,
+        'DefaultData': DefaultData,
+        'question marks': question_marks,
+        'Variables': Variables,
     };
+    for (var count = 0; count < Object.keys(Variables).length; count++)
+    {
+        var variable_name = VariableNames[count];
+        vars[variable_name.replace('_', ' ')] = Row[variable_name];
+    }
+    var NewItems = Items;
+    var ItemNames = exports.GetPropertyNames(Items);
+    var max_tier = -1;
+    for (var count = 0; count < Object.keys(Items).length; count++)
+    {
+        var item_name = ItemNames[count];
+        var cap = Items[item_name]['cap'];
+        if (Items[item_name]['tier'] > max_tier)
+        {
+            max_tier = Items[item_name]['tier'];
+        }
+        if (cap === null)
+        {
+            continue;
+        }
+        if (isNaN(cap))
+        {
+            var item = cap.split(' * ')[0];
+            var amount = Number(cap.split(' * ')[1]);
+            NewItems[item_name]['cap'] = vars[item] * amount;
+        }
+    }
+    vars['id'] = message.author.id;
+    vars['max tier'] = max_tier;
+    vars['Items'] = NewItems;
     p_vars = vars;
     vars['player tier'] = exports.GetUpgrade(0);
     Items['animal feed']['buy price'] = 1.2 + exports.GetUpgrade(1) * 1.8;
@@ -448,9 +524,7 @@ i like fortnite`);
         Quests[QuestNames[count]]['reward'] = QuestMultipliers[count] * exports.GetNetWoth() / 200;
     }
     p_vars = vars;
-    if (message.content[0] != ';')
-        return null;
-    var ResultList = exports.AutoFill(message, args[0], CommandList, true);
+    var ResultList = exports.AutoFill(message, args[0], CommandList);
     if (ResultList === null)
     {
         return null;
@@ -461,7 +535,9 @@ i like fortnite`);
         vars['command length'] = args[0].length;
         bot.commands.get(ResultList.toString()).execute(vars);
     }
-}
+
+})
+bot.login(token);
 function Mify(message)
 {
     if (message.content.length < 5)
@@ -543,7 +619,7 @@ function PayRespects()
                     for (var count = 0; count < People.length; count++)
                     {
                         var person = People[count].split(' ');
-                        var days_gone = Math.floor((time - person[person.length - 1]) / 84000000);
+                        var days_gone = exports.SecToHMS((time - person[person.length - 1]) / 1000);
                         var person_name = ``;
                         var days_or_day = ``;
                         for (var scount = 1; scount < person.length - 1; scount++)
@@ -551,18 +627,7 @@ function PayRespects()
                             person_name += `${person[scount]} `;
                         }
                         person_name = person_name.substring(0, person_name.length - 1);
-                        if (days_gone > 0)
-                        {
-                            if (days_gone > 1)
-                            {
-                                days_or_day = `days`;
-                            }
-                            else
-                            {
-                                days_or_day = `day`;
-                            }
-                            message += `Rip **\`${person_name}\`**. It's been \`${days_gone}\` ${days_or_day} since they left us. :sob:\n`;
-                        }
+                        message += `Rip **\`${person_name}\`**. It's been \`${days_gone}\` ${days_or_day} since they left us. :sob:\n`;
                     }
                     if (message.length > 0)
                     {
@@ -572,7 +637,7 @@ function PayRespects()
             }
         });
         PayRespects();
-    }, exports.SecondsUntilTime([24, 00, 00]) * 1000 + 5000);
+    }, exports.SecondsUntilTime(TIME_OF_RESPECT) * 1000 + 5000);
 }
 exports.HasAt = function (message)
 {
@@ -695,7 +760,7 @@ exports.GetItem = function ()
         number = exports.ConvertToNumber(args[1]);
     }
     var NumberInList = 0;
-    var ResultList = exports.AutoFill(message, item, ItemNames, true);
+    var ResultList = exports.AutoFill(message, item, ItemNames);
     if (ResultList === null)
     {
         return null;
@@ -893,6 +958,10 @@ exports.ConvertToUnit = function (number, units)
 }
 exports.AutoFill = function (message, phrase, PhraseList, ShowList)
 {
+    if (ShowList === undefined)
+    {
+        ShowList = true;
+    }
     var NumberInList = -1;
     var ResultList = [];
     for (var count = 0; count < Object.keys(PhraseList).length; count++)
@@ -918,7 +987,6 @@ exports.AutoFill = function (message, phrase, PhraseList, ShowList)
             }
         }
     }
-
     if (ResultList.length != 1 && ShowList === true)
     {
         var ListOfThings = ``;
@@ -1004,23 +1072,47 @@ exports.GetUpgraded = function (upgrade_slot, amount)
     new_upgrade_list = new_upgrade_list.substring(1);
     return new_upgrade_list.toString();
 }
-exports.SecToHMS = function (sec_amount)
+exports.SecToHMS = function (seconds)
 {
+    seconds = Math.floor(seconds);
     var hour_min_sec = ``;
-    var hours = Math.floor(sec_amount / 3600);
+    var years = Math.floor(seconds / 211680000);
+    if (years > 0)
+    {
+        hour_min_sec = hour_min_sec + years.toString() + `y `;
+    }
+    seconds = seconds - years * 211680000;
+    var months = Math.floor(seconds / 17640000);
+    if (months > 0)
+    {
+        hour_min_sec = hour_min_sec + months.toString() + `m `;
+    }
+    seconds = seconds - months * 17640000;
+    var weeks = Math.floor(seconds / 588000);
+    if (weeks > 0)
+    {
+        hour_min_sec = hour_min_sec + weeks.toString() + `w `;
+    }
+    seconds = seconds - weeks * 588000;
+    var days = Math.floor(seconds / 84000);
+    if (days > 0)
+    {
+        hour_min_sec = hour_min_sec + days.toString() + `d `;
+    }
+    seconds = seconds - days * 84000;
+    var hours = Math.floor(seconds / 3600);
     if (hours > 0)
     {
         hour_min_sec = hour_min_sec + hours.toString() + `h `;
     }
-    sec_amount = sec_amount - hours * 3600;
-    var minutes = Math.floor(sec_amount / 60);
+    seconds = seconds - hours * 3600;
+    var minutes = Math.floor(seconds / 60);
     if (minutes > 0)
     {
         hour_min_sec = hour_min_sec + minutes.toString() + `m `;
     }
-    sec_amount = sec_amount - minutes * 60;
-    sec_amount = Math.floor(sec_amount);
-    hour_min_sec = hour_min_sec + sec_amount.toString() + `s`;
+    seconds = seconds - minutes * 60;;
+    hour_min_sec = hour_min_sec + seconds.toString() + `s`;
     return hour_min_sec;
 }
 exports.ConvertToNumber = function (number_with_unit)
@@ -1138,4 +1230,8 @@ exports.SecondsUntilTime = function ([hours, minutes, seconds])
     }
     var seconds_until_respect = difference_in_hours * 3600 + difference_in_minutes * 60 + difference_in_seconds;
     return Math.max(0, seconds_until_respect);
+}
+exports.InsertString = function (string1, string2, position)
+{
+    return string1.substring(0, position) + string2 + string1.substring(position);
 }

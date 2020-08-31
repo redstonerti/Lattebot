@@ -11,14 +11,30 @@ module.exports = {
         {
             //Commands
             'version': `**Version: ${vars['version']}**
-This is a medium sized content update.
+This is a medium sized QoL update.
 
-There are now quests that can be completed to get extra money (small minigames)
-You can now access the roadmap by typing ;help roadmap
-The bot will now welcome anyone that comes in the server
-A bunch of other small stuff that i don't remember.
+This update includes categories and controls for ;balance,
+a few bug fixes
+and better structured code (which means that i can make content faster)
+probably a bunch of other small stuff that i forgot lol
 
 :)`,
+
+            'balance': `**Syntax:**
+balance + (optional){ open / close + tier / category name / all }
+
+**Description:**
+Balance shows you stuff about you. What you own, how you rank against others or statistics.
+
+You can open or close any category with the keywords open and close
+just write ;balance open / close and then the thing you want to open / close
+
+That could be one of three things. all, a number (it will act on the corresponding tier) or a category name
+
+Of course all of this can be shortened. For example, \`;balance open 1\` -> \`;ba o 1\`
+\`;balance close all\` -> \`;ba c a\`
+\`;balance open leaderboard\` -> \`;ba o l\`
+            `,
 
 
             'clear': `**Syntax:**
@@ -276,6 +292,7 @@ and look at the milanote roadmap [here](https://app.milanote.com/1JIXFg1A7IWS4Z?
                 `higher lower game`,
                 `find the button`,
                 `punch an elderly person`,
+                `balance`,
             ];
         var message = vars['message'];
         var args = vars['args'];
@@ -299,7 +316,7 @@ and look at the milanote roadmap [here](https://app.milanote.com/1JIXFg1A7IWS4Z?
 
 **General** \`clear\`, \`deport\`, \`undeport\`, \`hug\`, \`donate\`, \`suggest\`, \`buggify\`
 
-**Economy** \`give\`, \`beg\`, \`shop\`, \`buy\`, \`sell\`, \`milk\`, \`work\`, \`clean\` \`tier\`, \`upgrade\`
+**Economy** \`balance\`, \`give\`, \`beg\`, \`shop\`, \`buy\`, \`sell\`, \`milk\`, \`work\`, \`clean\` \`tier\`, \`upgrade\`
 
 -----------------------**ITEMS**-----------------------
 
@@ -313,7 +330,7 @@ ${quest_help_info}
 
 **Guides** \`how to get a gf\`, \`starting guide\`, \`autofill\`
 
-**Lattebot related** [Add to your server](https://discord.com/oauth2/authorize?client_id=722466765510148177&scope=bot&permissions=8 "big brain"), \`roadmap\` 
+**Lattebot related** [Donate](https://ko-fi.com/redstonerti#paymentModal "thanks man"), [Add to your server](https://discord.com/oauth2/authorize?client_id=722466765510148177&scope=bot&permissions=8 "big brain"), [Roadmap](https://app.milanote.com/1JIXFg1A7IWS4Z?p=RPYHur6CMy1 "massive brain")
 
 **Random stuff** \`bok choy\`, \`version\`
 `);
