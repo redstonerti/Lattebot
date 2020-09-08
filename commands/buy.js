@@ -41,7 +41,7 @@ module.exports = {
         var amount = 0;
         if (IsMax === true)
         {
-            amount = Math.floor(balance / BuyPrice);
+            amount = Math.min(Math.floor(balance / BuyPrice), Items[item]['cap'] - vars[item]);
         }
         else
         {
@@ -62,23 +62,11 @@ module.exports = {
             message.channel.send(`Lol u thought u could buy something that isn't at ur tier yet :rofl:\nThat item is at tier \`${ItemTier}\` but u are only tier \`${MyTier}\``);
             return;
         }
-        if (item === `cow`)
+        amount = Math.floor(amount);
+        if (vars[item] >= Items[item]['cap'] && Items[item]['cap'] != null)
         {
-            amount = Math.floor(amount);
-            if (cow >= CowMax)
-            {
-                message.channel.send(`You already have the max amount of cows(${CowMax})`);
-                return;
-            }
-        }
-        else if (item === `land`)
-        {
-            amount = Math.floor(amount);
-            if (land >= 200)
-            {
-                message.channel.send(`You already have the max amount of land(200)`);
-                return;
-            }
+            message.channel.send(`You already have the max amount of ${item} (\`${funcs.ConvertToUnit(Items[item]['cap'])}\`)`);
+            return;
         }
         if (amount < 0)
         {
@@ -87,19 +75,14 @@ module.exports = {
         }
         if (balance < BuyPrice)
         {
-            message.channel.send(`You don't have enough money for 1 ${item}. It costs: \`${BuyPrice}\` milkesh and you only have \`${balance}\` milkesh`);
+            message.channel.send(`You don't have enough money for 1 ${item}. It costs: \`${funcs.ConvertToUnit(BuyPrice)}\` milkesh and you only have \`${funcs.ConvertToUnit(balance)}\` milkesh`);
             return;
         }
         var CurrentItemAmount = Number(vars[item.toString()]);
         var IsAtCap = ``;
-        if (amount + CurrentItemAmount > CowMax && item === `cow`)
+        if (amount + CurrentItemAmount > Items[item]['cap'] && Items[item]['cap'] != null)
         {
-            amount = Math.min(CowMax - CurrentItemAmount, Math.floor(balance / BuyPrice));
-            IsAtCap = `\nYou're now at the max!`;
-        }
-        else if (amount + CurrentItemAmount > 200 && item === `land`)
-        {
-            amount = Math.min(200 - CurrentItemAmount, Math.floor(balance / BuyPrice));
+            amount = Math.min(Items[item]['cap'] - CurrentItemAmount, Math.floor(balance / BuyPrice));
             IsAtCap = `\nYou're now at the max!`;
         }
         var total = BuyPrice * amount;
@@ -107,12 +90,12 @@ module.exports = {
         {
             amount = Math.floor(balance / BuyPrice);
             total = BuyPrice * amount;
-            message.channel.send(`You don't even have enough money, but that's alright, i bought you \`${funcs.ConvertToUnit(amount, `K M B`)} ${item}\` for \`${funcs.ConvertToUnit(total, `K M B`)}\` milkesh\nYou now have \`${funcs.ConvertToUnit(balance - total, `K M B`)}\` milkesh` + IsAtCap);
+            message.channel.send(`You don't even have enough money, but that's alright, i bought you \`${funcs.ConvertToUnit(amount)} ${item}\` for \`${funcs.ConvertToUnit(total)}\` milkesh\nYou now have \`${funcs.ConvertToUnit(balance - total)}\` milkesh` + IsAtCap);
         }
         else
         {
             total = BuyPrice * amount;
-            message.channel.send(`You bought \`${funcs.ConvertToUnit(amount, `K M B`)} ${item}\` for \`${funcs.ConvertToUnit(total, `K M B`)}\` milkesh\nYou now have \`${funcs.ConvertToUnit(balance - total, `K M B`)}\` milkesh` + IsAtCap);
+            message.channel.send(`You bought \`${funcs.ConvertToUnit(amount)} ${item}\` for \`${funcs.ConvertToUnit(total)}\` milkesh\nYou now have \`${funcs.ConvertToUnit(balance - total)}\` milkesh` + IsAtCap);
         }
         db.run(`UPDATE data SET ${item.replace(' ', '_')} = ? WHERE id = ?`, [(CurrentItemAmount + amount).toFixed(2), id]);
         db.run(`UPDATE data SET balance = ? WHERE id = ?`, [(balance - total).toFixed(2), id]);

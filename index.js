@@ -22,13 +22,11 @@ var upgrade_list_length;
 bot.commands = new Discord.Collection();
 const commandFiles = fs.readdirSync('./commands/').filter(file => file.endsWith('.js'));
 const { Client, MessageAttachment, MessageEmbed } = require('discord.js');
-const { exit } = require('process');
-const { clear, timeStamp } = require('console');
 const sqlite = require('sqlite3').verbose();
 const Canvas = require('canvas');
-const { EOPNOTSUPP } = require('constants');
-const { resolve } = require('path');
 const TIME_OF_RESPECT = [24, 00, 00];
+const SHOW_SERVERS = true;
+const SHOW_MEMBERS = false;
 var p_vars;
 var vars;
 var DefaultVariables =
@@ -43,6 +41,7 @@ var Items =
         'tier': 0,
         'emoji': '🥛',
         'cap': null,
+        'cap calculation': null,
         'unique attribute': ''
     },
     'clean milk': {
@@ -51,6 +50,7 @@ var Items =
         'tier': 1,
         'emoji': '🍼',
         'cap': null,
+        'cap calculation': null,
         'unique attribute': ''
     },
     'cow': {
@@ -58,7 +58,8 @@ var Items =
         'sell price': 123,
         'tier': 0,
         'emoji': '🐄',
-        'cap': 'land * 5',
+        'cap': null,
+        'cap calculation': `land * 5`,
         'unique attribute': ''
     },
     'land': {
@@ -67,6 +68,7 @@ var Items =
         'tier': 0,
         'emoji': '⛳',
         'cap': 200,
+        'cap calculation': null,
         'unique attribute': ''
     },
     'pasteurizer': {
@@ -75,6 +77,7 @@ var Items =
         'tier': 1,
         'emoji': '⚙️',
         'cap': null,
+        'cap calculation': null,
         'unique attribute': ''
     },
     'battery': {
@@ -83,6 +86,7 @@ var Items =
         'tier': 1,
         'emoji': '🔋',
         'cap': null,
+        'cap calculation': null,
         'unique attribute': '10KW capacity'
     },
     'solar panel': {
@@ -91,6 +95,7 @@ var Items =
         'tier': 1,
         'emoji': '⛅',
         'cap': null,
+        'cap calculation': null,
         'unique attribute': '0.1W / sec'
     },
     'wind turbine': {
@@ -99,6 +104,7 @@ var Items =
         'tier': 1,
         'emoji': '💨',
         'cap': null,
+        'cap calculation': null,
         'unique attribute': '0.03W / sec'
     },
     'animal feed': {
@@ -107,6 +113,7 @@ var Items =
         'tier': 2,
         'emoji': '🌾',
         'cap': null,
+        'cap calculation': null,
         'unique attribute': ''
     },
     'corn': {
@@ -115,6 +122,7 @@ var Items =
         'tier': 2,
         'emoji': '🌽',
         'cap': null,
+        'cap calculation': null,
         'unique attribute': ''
     },
     'seed': {
@@ -123,6 +131,7 @@ var Items =
         'tier': 2,
         'emoji': '🌿',
         'cap': null,
+        'cap calculation': null,
         'unique attribute': ''
     },
     'grinder': {
@@ -131,6 +140,7 @@ var Items =
         'tier': 2,
         'emoji': '🗜️',
         'cap': null,
+        'cap calculation': null,
         'unique attribute': ''
     },
     'farm': {
@@ -139,6 +149,7 @@ var Items =
         'tier': 2,
         'emoji': '🚜',
         'cap': null,
+        'cap calculation': null,
         'unique attribute': ''
     },
 };
@@ -166,23 +177,23 @@ var Quests =
 {
     'higher lower game':
     {
-        'reward': 2,
+        'reward': null,
         'wait time': 70
     },
     'find the button':
     {
-        'reward': 5,
+        'reward': null,
         'wait time': 130
     },
     'punch an elderly person':
     {
-        'reward': -100,
+        'reward': null,
         'wait time': 0.1
     },
 };
 var QuestNames;
 var CommandList = [];
-var QuestMultipliers = [2, 5, -100];
+var QuestMultipliers = [2, 5, -10];
 for (const file of commandFiles)
 {
     const command = require(`./commands/${file}`);
@@ -191,6 +202,14 @@ for (const file of commandFiles)
 }
 bot.on('ready', async () =>
 {
+    if (SHOW_SERVERS)
+    {
+        bot.guilds.cache.forEach(guild =>
+        {
+            console.log(`${guild.name}: ${guild.memberCount}`);
+        });
+        console.log(bot.guilds.cache.size);
+    }
     let db = new sqlite.Database('./database.db', sqlite.OPEN_READWRITE);
     console.log('This bot is online!');
     bot.user.setPresence(
@@ -225,11 +244,16 @@ bot.on('ready', async () =>
         return;
     }
     DefaultVariables = Row;
-    //db.run(`UPDATE data SET balance_settings = ?`, ['1|1']);
+    //db.run(`UPDATE data SET hologram = ?`, [0]);
 });
 bot.on('guildMemberAdd', async member =>
 {
     if (bot.user.username === 'Tester bot') return;
+    if (member.guild === null) return;
+    if (SHOW_MEMBERS)
+    {
+        console.log(`member ${member.user.username} entered guild ${member.guild.name}`);
+    }
     let db = new sqlite.Database('./database.db', sqlite.OPEN_READWRITE);
     var channel = member.guild.channels.cache.find(ch => ch.name === 'welcome' || ch.name === 'new-members' || ch.name === 'member-log' || ch.name === 'milk-hall');
     if (!channel) return;
@@ -267,6 +291,12 @@ I hope you get what you deserve...
 });
 bot.on('guildMemberRemove', async member =>
 {
+    if (member.guild === null) return;
+    if (SHOW_MEMBERS)
+    {
+        console.log(`member ${member.user.username} left guild ${member.guild.name}`);
+    }
+    if (bot.user.username === 'Tester bot') return;
     let db = new sqlite.Database('./database.db', sqlite.OPEN_READWRITE);
     var guild = member.guild;
     var id = guild.id;
@@ -328,12 +358,28 @@ bot.on('guildMemberRemove', async member =>
         new_dead += new Date().getTime();
         db.run(`UPDATE servers SET dead_people = ? where id = ?`, [dead_people + new_dead, id]);
     }
-    var channel = member.guild.channels.cache.find(ch => ch.name === 'milk-hall');
+    var channel = member.guild.channels.cache.find(ch => ch.name === 'milk-hall' || ch.name === 'testing');
     if (!channel) return;
-    channel.send(`:sob: ${member.user.tag} :milgodsad: is gone no-\n\n**STFU MEE6 WITH YOUR ZAML SHIT.\nWe just lost ${member.user.username} and you're over here zamling. Piss off.\nNo shit you were too zaml. Look at what you've done to them.**\n\n\n\n\n\n*h-hello? yeah i just blacked out for 20 seconds*`);
+    var guild = channel.guild;
+    var emoji;
+    var grief = ``;
+    if (guild.name === 'Kingdom of Latteland' || guild.name === 'Lattebot testing and support')
+    {
+        emoji = guild.emojis.cache.find(emoji => emoji.name === "milgodsad");
+        channel.send(`:sob: ${member.user.tag} ${emoji} is gone no-\n\n**STFU MEE6 WITH YOUR ZAML SHIT.\nWe just lost ${member.user.username} and you're over here zamling. Piss off.\nNo shit you were too zaml. Look at what you've done to them.**\n\n\n\n\n\n*h-hello? yeah i just blacked out for 20 seconds*`);
+    }
+    else
+    {
+        emoji = ':sob:';
+        channel.send(`:sob: ${member.user.tag} ${emoji} is gone. A moment of silence for the dead /- _ -\ `);
+    }
 });
 bot.on('guildCreate', async guild =>
 {
+    if (SHOW_SERVERS)
+    {
+        console.log(`Entered a new guild! ${guild.name}`);
+    }
     let db = new sqlite.Database('./database.db', sqlite.OPEN_READWRITE);
     let InsertData = db.prepare(`INSERT INTO servers VALUES(?,?,?)`);
     InsertData.run(/*id*/guild.id, /*name*/guild.name, /*dead_people*/'');
@@ -342,73 +388,66 @@ bot.on('guildCreate', async guild =>
 });
 bot.on('guildDelete', async guild =>
 {
+    if (SHOW_SERVERS)
+    {
+        console.log(`Left guild ${guild.name} :(`);
+    }
     let db = new sqlite.Database('./database.db', sqlite.OPEN_READWRITE);
-    db.run(`DELETE from servers WHERE id = ?`, [guild.id]);
+    db.run(`DELETE from servers WHERE id = ? `, [guild.id]);
 });
 bot.on('message', async message =>
 {
+    var is_dm = true;
     let db = new sqlite.Database('./database.db', sqlite.OPEN_READWRITE);
     var channel_name = message.channel.name;
-    if (channel_name.substring(0, 6) != 'testing' && bot.user.username === 'Tester bot') return;
-    if (channel_name.substring(0, 6) === 'testing' && bot.user.username === 'Lattebot') return;
-    if (message.author.username === 'Lattebot' || message.author.username === 'Tester bot') return;
-    if (channel_name === 'the-letter-m') 
+    if (message.guild != null)
     {
-        setTimeout(() =>
+        if (channel_name.substring(0, 7) != 'testing' && bot.user.username === 'Tester bot') return;
+        if (channel_name.substring(0, 7) === 'testing' && bot.user.username === 'Lattebot') return;
+        if (message.author.username === 'Lattebot' || message.author.username === 'Tester bot') return;
+        if (channel_name === 'the-letter-m') 
         {
-            Mify(message);
-        }, 3000);
-        return;
-    }
-    message.content = message.content.toLowerCase();
-    if (message.content.substring(0, 15) === `i love fortnite`)
-    {
-        message.channel.send(`${message.member.user} has been banned for saying:
-i love fortnite`);
-        message.member.ban(message.member.user);
-    }
-    if (message.content.substring(0, 15) === `i like fortnite`)
-    {
-        message.channel.send(`${message.member.user} has been banned for saying:
-i like fortnite`);
-        message.member.ban(message.member.user);
-    }
-    if (message.content.toLowerCase().substring(0, 5) === 'send ')
-    {
-        if (exports.HasAt(message) === false)
-        {
-            message.channel.send(message.content.substring(5));
+            setTimeout(() =>
+            {
+                Mify(message);
+            }, 3000);
+            return;
         }
+        var is_dm = false;
     }
-    else if (message.content.toLowerCase().substring(0, 6) === 'putin ')
     {
-        if (exports.HasAt(message) === false)
+        if (message.content.toLowerCase().substring(0, 5) === 'send ')
         {
-            message.channel.send(`put out ${message.content.toLowerCase().substring(6)}`);
+            if (!message.content.includes('@'))
+            {
+                message.channel.send(message.content.substring(5));
+            }
         }
-    }
-    else if (message.content === 'noice')
-    {
-        if (exports.HasAt(message) === false)
+        else if (message.content.toLowerCase().substring(0, 6) === 'putin ')
+        {
+            if (!message.content.includes('@'))
+            {
+                message.channel.send(`put out ${message.content.toLowerCase().substring(6)} `);
+            }
+        }
+        else if (message.content.toLowerCase() === 'noice')
         {
             const attachment = new MessageAttachment('./noice.png');
             message.channel.send(attachment);
         }
-    }
-    else if (message.content === 'bruh')
-    {
-        if (exports.HasAt(message) === false)
+        else if (message.content.toLowerCase() === 'bruh')
         {
             const attachment = new MessageAttachment('./bruh.png');
             message.channel.send(attachment);
         }
     }
+    message.content = message.content.toLowerCase();
     if (message.content.substring(0, PREFIX.length) != PREFIX || message.content.substring(0, 3) === ';-;')
         return null;
     let time = Math.round(new Date().getTime() / 1000);
     let id = message.author.id;
     let name = message.author.tag;
-    let query = `SELECT * FROM data WHERE id = ?`;
+    let query = `SELECT * FROM data WHERE id = ? `;
     var Variables = DefaultVariables;
     Variables['id'] = id;
     Variables['name'] = name;
@@ -419,7 +458,7 @@ i like fortnite`);
     for (var count = 0; count < Object.keys(Variables).length; count++)
     {
         DefaultData.push(Variables[VariableNames[count]]);
-        question_marks += `,?`;
+        question_marks += `,? `;
     }
     question_marks = question_marks.substring(1);
     var Row;
@@ -469,12 +508,13 @@ i like fortnite`);
         'message': message,
         'prefix': PREFIX,
         'args': args,
-        'db': db,
+        'db': db = new sqlite.Database('./database.db', sqlite.OPEN_READWRITE),
         'time': time,
         'ItemNames': [],
         'Items': Items,
         'version': version,
         'command length': 0,
+        'is dm': is_dm,
         'player tier': 0,
         'Upgrades': Upgrades,
         'UpgradeNames': [],
@@ -489,27 +529,24 @@ i like fortnite`);
         var variable_name = VariableNames[count];
         vars[variable_name.replace('_', ' ')] = Row[variable_name];
     }
-    var NewItems = Items;
     var ItemNames = exports.GetPropertyNames(Items);
+    var NewItems = Items
     var max_tier = -1;
     for (var count = 0; count < Object.keys(Items).length; count++)
     {
         var item_name = ItemNames[count];
-        var cap = Items[item_name]['cap'];
+        var cap_calc = Items[item_name]['cap calculation'];
         if (Items[item_name]['tier'] > max_tier)
         {
             max_tier = Items[item_name]['tier'];
         }
-        if (cap === null)
+        if (cap_calc === null)
         {
             continue;
         }
-        if (isNaN(cap))
-        {
-            var item = cap.split(' * ')[0];
-            var amount = Number(cap.split(' * ')[1]);
-            NewItems[item_name]['cap'] = vars[item] * amount;
-        }
+        var item = cap_calc.split(' * ')[0];
+        var amount = Number(cap_calc.split(' * ')[1]);
+        NewItems[item_name]['cap'] = vars[item] * amount;
     }
     vars['id'] = message.author.id;
     vars['max tier'] = max_tier;
@@ -619,7 +656,9 @@ function PayRespects()
                     for (var count = 0; count < People.length; count++)
                     {
                         var person = People[count].split(' ');
-                        var days_gone = exports.SecToHMS((time - person[person.length - 1]) / 1000);
+                        var leave_time = person[person.length - 1];
+                        var time_gone = time - leave_time;
+                        var days_gone = exports.SecToHMS(time_gone / 1000);
                         var person_name = ``;
                         var days_or_day = ``;
                         for (var scount = 1; scount < person.length - 1; scount++)
@@ -637,18 +676,7 @@ function PayRespects()
             }
         });
         PayRespects();
-    }, exports.SecondsUntilTime(TIME_OF_RESPECT) * 1000 + 5000);
-}
-exports.HasAt = function (message)
-{
-    for (var count = 0; count < message.content.length; count++)
-    {
-        if (message.content[count] === '@')
-        {
-            return true;
-        }
-    }
-    return false;
+    }, exports.SecondsUntilTime(TIME_OF_RESPECT) * 1000 + 2000);
 }
 exports.Say = function (message, Title, description, colour, display_avatar)
 {
@@ -656,7 +684,7 @@ exports.Say = function (message, Title, description, colour, display_avatar)
     {
         display_avatar = false;
     }
-    var name = message.member.user.username;
+    var name = message.author.username;
     if (colour === undefined)
     {
         colour = 0x3498db;
@@ -670,7 +698,6 @@ exports.Say = function (message, Title, description, colour, display_avatar)
     {
         embed = new MessageEmbed().setTitle(Title).setColor(colour).setDescription(description);
     }
-
     message.channel.send(embed);
 }
 exports.GetId = function (FullId)
@@ -789,8 +816,10 @@ exports.GetItem = function ()
     }
     return [ResultList, number, NumberInList, IsMax];
 }
-exports.GetName = function (args)
+exports.GetName = function ()
 {
+    var args = p_vars['args'];
+    var message = p_vars['message'];
     var name = '';
     var NumberPosition = -1;
     for (var count = 0; count < args.length; count++)
@@ -805,7 +834,16 @@ exports.GetName = function (args)
         name = name + ' ' + args[count];
     }
     name = name.substring(1);
-    var number = exports.ConvertToNumber(args[NumberPosition]);
+    var number = -1;
+    if (NumberPosition > 1)
+    {
+        number = exports.ConvertToNumber(args[NumberPosition]);
+    }
+    else
+    {
+        message.channel.send(`You have to specify a number after the name. e.g.\`;give ${args[1]} 4\``);
+        return null;
+    }
     var command = 'milkesh';
     if (args.length - 1 != NumberPosition)
     {
@@ -1074,32 +1112,33 @@ exports.GetUpgraded = function (upgrade_slot, amount)
 }
 exports.SecToHMS = function (seconds)
 {
+    seconds = Number(seconds);
     seconds = Math.floor(seconds);
     var hour_min_sec = ``;
-    var years = Math.floor(seconds / 211680000);
+    var years = Math.floor(seconds / 31536000);
     if (years > 0)
     {
         hour_min_sec = hour_min_sec + years.toString() + `y `;
     }
-    seconds = seconds - years * 211680000;
-    var months = Math.floor(seconds / 17640000);
+    seconds = seconds - years * 31536000;
+    var months = Math.floor(seconds / 2592000);
     if (months > 0)
     {
         hour_min_sec = hour_min_sec + months.toString() + `m `;
     }
-    seconds = seconds - months * 17640000;
-    var weeks = Math.floor(seconds / 588000);
+    seconds = seconds - months * 2592000;
+    var weeks = Math.floor(seconds / 604800);
     if (weeks > 0)
     {
         hour_min_sec = hour_min_sec + weeks.toString() + `w `;
     }
-    seconds = seconds - weeks * 588000;
-    var days = Math.floor(seconds / 84000);
+    seconds = seconds - weeks * 604800;
+    var days = Math.floor(seconds / 86400);
     if (days > 0)
     {
         hour_min_sec = hour_min_sec + days.toString() + `d `;
     }
-    seconds = seconds - days * 84000;
+    seconds = seconds - days * 86400;
     var hours = Math.floor(seconds / 3600);
     if (hours > 0)
     {
@@ -1111,8 +1150,11 @@ exports.SecToHMS = function (seconds)
     {
         hour_min_sec = hour_min_sec + minutes.toString() + `m `;
     }
-    seconds = seconds - minutes * 60;;
-    hour_min_sec = hour_min_sec + seconds.toString() + `s`;
+    seconds = seconds - minutes * 60;
+    if (seconds >= 0)
+    {
+        hour_min_sec = hour_min_sec + seconds.toString() + `s`;
+    }
     return hour_min_sec;
 }
 exports.ConvertToNumber = function (number_with_unit)
@@ -1143,7 +1185,7 @@ exports.ConvertToNumber = function (number_with_unit)
         'K': 1000,
         'M': 1000000,
         'B': 1000000000,
-        'T': 1000000000000
+        'T': 1000000000000,
     };
     var multiplier = Units[unit];
     if (multiplier === undefined)

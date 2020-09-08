@@ -109,8 +109,8 @@ ${next_milk_harvest_info}
         }
         if (player_tier >= 2)
         {
-            next_corn_harvest_info = `\n                 🌽 Next full corn harvest: \`${funcs.SecToHMS(Math.max(last_harvested + 10000 - time, 0))}\``;
-            next_milk_harvest_info = `\n                 🥛 Next full milk harvest: \`${funcs.SecToHMS(Math.max(last_milked + 10000 - time, 0))}\``;
+            next_corn_harvest_info = `\n                 🌽 Next full corn harvest: \`${funcs.SecToHMS(Number(Math.max(last_harvested + 10000 - time, 0)))}\``;
+            next_milk_harvest_info = `\n                 🥛 Next full milk harvest: \`${funcs.SecToHMS(Number(Math.max(last_milked + 10000 - time, 0)))}\``;
         }
         var Places = await GetLeaderboard(vars);
         /*spacing:     */

@@ -5,6 +5,11 @@ module.exports = {
     description: "undeports people",
     execute(vars)
     {
+        if (vars['is dm']) 
+        {
+            vars['message'].channel.send(`❌ This command cannot be used in dms as it relies on being in a guild to function ❌`);
+            return;
+        }
         var message = vars['message'];
         var args = vars['args'];
         var db = vars['db'];

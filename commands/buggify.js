@@ -18,6 +18,6 @@ module.exports = {
         InsertData.run(name, suggestion);
         InsertData.finalize();
         db.close();
-        message.channel.send(`${message.member.user.username}, your bug was submitted successfully!\nThere's a good chance that my creator will fix it too.`)
+        message.channel.send(`${message.author.username}, your bug was submitted successfully!\nThere's a good chance that my creator will fix it too.`)
     }
 }

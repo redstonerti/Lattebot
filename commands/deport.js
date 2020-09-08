@@ -5,6 +5,11 @@ module.exports = {
     description: "deports people",
     execute(vars)
     {
+        if (vars['is dm']) 
+        {
+            vars['message'].channel.send(`❌ This command cannot be used in dms as it relies on being in a guild to function ❌`);
+            return;
+        }
         var args = vars['args'];
         var message = vars['message'];
         var db = vars['db'];
@@ -14,7 +19,7 @@ module.exports = {
         {
             funcs.Say(message, `Deport command`, `**Syntax**: deport + @person or name or nickname\n**Description**: The deport command adds the role 'deported' to the target, and adds 1 milkesh to the sender's balance while showing an amazing image and thank the person using it`);
         }
-        if (args[1] == "myself")
+        if (args[1] === 'myself' || args[1] === 'mysel' || args[1] === 'myse' || args[1] === 'mys' || args[1] === 'my' || args[1] === 'm')
         {
             funcs.AddRole(message, message.member, 'deported', db, balance, id);
         }

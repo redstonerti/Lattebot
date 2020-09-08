@@ -40,7 +40,7 @@ module.exports = {
         funcs.Say(message, `Quest options`, quest_options_display);
         // `m` is a message object that will be passed through the filter function
         const filter = m => m.author.id === message.author.id;
-        const collector = message.channel.createMessageCollector(filter, { time: 15000 });
+        const collector = message.channel.createMessageCollector(filter, { time: 30000 });
         var StopReason = `time`;
         var quest;
         collector.on('collect', m =>
@@ -121,7 +121,7 @@ module.exports = {
             }
             if (StopReason === `time`)
             {
-                message.channel.send(`Bruh no. I've been waiting for \`15\` seconds. I'm not a waitor.`);
+                message.channel.send(`Bruh no. I've been waiting for \`30\` seconds. I'm not a waitor.`);
             }
             if (quest != undefined)
             {
@@ -313,29 +313,24 @@ function StartQuest(message, Quests, vars, quest)
     }
     collector.on('end', collected =>
     {
-        var lost_message = `\nYou lost\`${funcs.ConvertToUnit(reward / 2, `K M B`)}\` milkesh`;
         if (StopReason === `requested end`)
         {
-            message.channel.send(`Quitter.${lost_message}`);
-            db.run(`UPDATE data SET balance = ? WHERE id = ?`, [balance - reward / 2, id])
+            message.channel.send(`Quitter.`);
             return;
         }
         if (StopReason === `time` && WaitTime > 0)
         {
-            message.channel.send(`Time's up! You had \`${funcs.SecToHMS(WaitTime - (time - start_time))}\` left but you screwed it up.${lost_message}`);
-            db.run(`UPDATE data SET balance = ? WHERE id = ?`, [balance - reward / 2, id])
+            message.channel.send(`Time's up! You had \`${funcs.SecToHMS(WaitTime - (time - start_time))}\` left but you screwed it up.`);
             return;
         }
         if (StopReason === `searches`)
         {
-            message.channel.send(`Bruh, you ran out of searches.\nBetter luck next time ¯\\_(ツ)_/¯${lost_message}`);
-            db.run(`UPDATE data SET balance = ? WHERE id = ?`, [balance - reward / 2, id])
+            message.channel.send(`Bruh, you ran out of searches.\nBetter luck next time ¯\\_(ツ)_/¯`);
             return;
         }
         if (StopReason === `moves`)
         {
-            message.channel.send(`Bruh, you ran out of moves.\nBetter luck next time ¯\\_(ツ)_/¯${lost_message}`);
-            db.run(`UPDATE data SET balance = ? WHERE id = ?`, [balance - reward / 2, id])
+            message.channel.send(`Bruh, you ran out of moves.\nBetter luck next time ¯\\_(ツ)_/¯`);
             return;
         }
         if (won_game === false)

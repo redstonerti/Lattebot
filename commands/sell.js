@@ -76,20 +76,20 @@ module.exports = {
             if ((land - amount) * 5 < cow)
             {
                 CowDeletionAmount = cow - (land - amount) * 5;
-                CowDeletion = `\nBtw, because you sold too much land, you don't have enough space for \`${funcs.ConvertToUnit(CowDeletionAmount, `K M B`)}\` cows so i had to sell them.\nYou got \`${funcs.ConvertToUnit(CowDeletionAmount * 123, `K M B`)} milkesh\` for selling those cows`;
+                CowDeletion = `\nBtw, because you sold too much land, you don't have enough space for \`${funcs.ConvertToUnit(CowDeletionAmount)}\` cows so i had to sell them.\nYou got \`${funcs.ConvertToUnit(CowDeletionAmount * 123)} milkesh\` for selling those cows`;
                 db.run(`UPDATE data SET cow = ? WHERE id = ?`, [cow - CowDeletionAmount, id]);
                 db.run(`UPDATE data SET balance = ? WHERE id = ?`, [(balance + CowDeletionAmount * 123).toFixed(2), id]);
             }
         }
         if (HasEnough == false)
         {
-            message.channel.send(`You don't have enough \`${item}\`, but that's alright, i bought it all for \`${funcs.ConvertToUnit(total, `K M B`)}\` milkesh\nYou now have \`${funcs.ConvertToUnit(balance + CurrentItemAmount * SellPrice, `K M B`)}\` milkesh` + CowDeletion);
+            message.channel.send(`You don't have enough \`${item}\`, but that's alright, i bought it all for \`${funcs.ConvertToUnit(total)}\` milkesh\nYou now have \`${funcs.ConvertToUnit(balance + CurrentItemAmount * SellPrice)}\` milkesh` + CowDeletion);
             db.run(`UPDATE data SET ${item.replace(' ', '_')} = ? WHERE id = ?`, [0, id]);
 
         }
         else
         {
-            message.channel.send(`You sold \`${funcs.ConvertToUnit(amount, `K M B`)} ${item}\` for \`${funcs.ConvertToUnit(total, `K M B`)}\` milkesh\nYou now have \`${funcs.ConvertToUnit(balance + total, `K M B`)}\` milkesh` + CowDeletion);
+            message.channel.send(`You sold \`${funcs.ConvertToUnit(amount)} ${item}\` for \`${funcs.ConvertToUnit(total)}\` milkesh\nYou now have \`${funcs.ConvertToUnit(balance + total)}\` milkesh` + CowDeletion);
             db.run(`UPDATE data SET ${item.replace(' ', '_')} = ? WHERE id = ?`, [CurrentItemAmount - amount, id]);
         }
         db.run(`UPDATE data SET balance = ? WHERE id = ?`, [(balance + total).toFixed(2), id]);

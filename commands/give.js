@@ -5,6 +5,11 @@ module.exports = {
     description: "You can give someone something",
     execute(vars)
     {
+        if (vars['is dm']) 
+        {
+            vars['message'].channel.send(`❌ This command cannot be used in dms as it relies on being in a guild to function ❌`);
+            return;
+        }
         var message = vars['message'];
         var args = vars['args'];
         var db = vars['db'];
@@ -12,10 +17,14 @@ module.exports = {
         var balance = vars['balance'];
         if (args.length === 1)
         {
-            funcs.Say(message, `Give command`, `**Syntax**: give + @person or name or nickname + amount + item type(optional)\n**Description**: The give command transfers the amount and type of items specified from the sender to the target. If no item type is given, it will default to Milkesh`);
+            funcs.Say(message, `Give command`, `**Syntax**: give + @person or name or nickname + amount + item type(not implemented yet)\n**Description**: The give command transfers the amount and type of items specified from the sender to the target. If no item type is given, it will default to Milkesh`);
             return;
         }
-        var CommandStuff = funcs.GetName(args);
+        var CommandStuff = funcs.GetName();
+        if (CommandStuff === null)
+        {
+            return null;
+        }
         var PersonName = CommandStuff[0];
         var AmountToTransfer = Number(CommandStuff[1]);
         var ItemType = CommandStuff[2];
@@ -70,16 +79,18 @@ module.exports = {
                             if (row === undefined)
                             {
                                 var DefaultData = vars['DefaultData'];
-                                DefaultData[0] = PersonWithRequestedName.id;
-                                DefaultData[1] = PersonWithRequestedName.user.tag;
-                                DefaultData[2] = (AmountToTransfer).toFixed(2);
+                                console.log(DefaultData);
+                                DefaultData[0] = 0;
+                                DefaultData[1] = PersonWithRequestedName.user.id;
+                                DefaultData[2] = PersonWithRequestedName.user.tag;
+                                DefaultData[3] = Number((AmountToTransfer).toFixed(2));
                                 console.log(`row was undefined`);
                                 let InsertData = db.prepare(`INSERT INTO data VALUES(${vars['question marks']})`);
-                                InsertData.run([DefaultData]);
+                                InsertData.run(DefaultData);
                                 InsertData.finalize();
                                 db.close();
                                 db.run(`UPDATE data SET balance = ? WHERE id = ?`, [(balance - AmountToTransfer).toFixed(2), id]);
-                                message.channel.send(`${message.member.user.username} now has \`${funcs.ConvertToUnit(balance - AmountToTransfer, `K M B`)} ${ItemType}\`\n${PersonWithRequestedName.user.username} now has \`${funcs.ConvertToUnit(row.balance + AmountToTransfer, `K M B`)} ${ItemType}\``);
+                                message.channel.send(`${message.member.user.username} now has \`${funcs.ConvertToUnit(balance - AmountToTransfer, `K M B`)} ${ItemType}\`\n${PersonWithRequestedName.user.username} now has \`${funcs.ConvertToUnit(AmountToTransfer, `K M B`)} ${ItemType}\``);
                                 return;
                             }
                             else
