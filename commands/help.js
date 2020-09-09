@@ -7,16 +7,25 @@ module.exports = {
     {
         var ItemNames = vars['ItemNames'];
         var QuestNames = vars['QuestNames'];
+        var prefix = vars['prefix'];
         const Info =
         {
             //Commands
             'version': `**Version: ${vars['version']}**
-This is a medium sized QoL update.
+This is a small content update.
 
-This update includes categories and controls for ;balance,
-a few bug fixes
-and better structured code (which means that i can make content faster)
-probably a bunch of other small stuff that i forgot lol
+This update includes the leaderboard command
+a ton of bug fixes
+and Lattebot now has a page on [top.gg](https://top.gg/bot/722466765510148177 "humongous noggin")! You could help him out by [voting for him](https://top.gg/bot/722466765510148177/vote "omega extra large sized noggin") too.
+
+ALSO: omega big brain. There are now server settings! I mean, for now there's only 3 (important) things:
+changing the prefix
+setting 'allowed channels for lattebot'
+and turning on and off image reactions
+but i can expand later if i want
+
+Sorry i couldn't implement more content (factions) this update but actually keeping
+him alive by fixing the fatal bugs was more important
 
 :)`,
 
@@ -27,13 +36,13 @@ balance + (optional){ open / close + tier / category name / all }
 Balance shows you stuff about you. What you own, how you rank against others or statistics.
 
 You can open or close any category with the keywords open and close
-just write ;balance open / close and then the thing you want to open / close
+just write ${prefix}balance open / close and then the thing you want to open / close
 
 That could be one of three things. all, a number (it will act on the corresponding tier) or a category name
 
-Of course all of this can be shortened. For example, \`;balance open 1\` -> \`;ba o 1\`
-\`;balance close all\` -> \`;ba c a\`
-\`;balance open leaderboard\` -> \`;ba o l\`
+Of course all of this can be shortened. For example, \`${prefix}balance open 1\` -> \`${prefix}ba o 1\`
+\`${prefix}balance close all\` -> \`${prefix}ba c a\`
+\`${prefix}balance open leaderboard\` -> \`${prefix}ba o l\`
             `,
 
 
@@ -141,6 +150,11 @@ You can upgrade anything in the upgrades shop with this command
 `,
 
 
+            'leaderboard': `**Syntax:**
+leaderboard + [amount (\`up to 20\`)] + [sorted thing]
+
+**Description**: The leaderboard command shows you the players that have the highest or lowest of ANY value\n\n**Examples:** \`leaderboard 5 balance\` => \`${prefix}l 5 balance\`\n \`leaderboard 20 milk\` => \`l 20 m\``,
+
             //Items
             'milk': `**Description:**
 Milk is produced by cows and it can be either sold or turned into clean milk to be sold for more money.
@@ -201,28 +215,28 @@ Milk is produced by cows and it can be either sold or turned into clean milk to 
                 `
 This is a game about making money primarily from cows. First, you need to work for Lattebot. He will give you 20 milkesh at the beginning but will give you a 10 milkesh raise every 5 times you work.
 
-Once you get up to 130 milkesh, you can buy your first cow. It will start producing milk and you can get it with the ;milk command. You can also sell that milk to get milkesh. 
+Once you get up to 130 milkesh, you can buy your first cow. It will start producing milk and you can get it with the ${prefix}milk command. You can also sell that milk to get milkesh. 
 
 This is fine until you reach 200 cows. At that point you are going to need to buy more land. You start out with 40 land and each piece of land can house 5 cows.
 
 After you reach the land cap too (200 land), you are going to want to start buying some pasteurizers and some power generation and storage.
 
-Buy batteries to store your power and solar panels or wind turbines to produce it. You will need this power to pasteurize your milk with the ;clean command. You will use your pasteurizers to clean it and turn it into clean milk which is 3x more expensive (to sell)
+Buy batteries to store your power and solar panels or wind turbines to produce it. You will need this power to pasteurize your milk with the ${prefix}clean command. You will use your pasteurizers to clean it and turn it into clean milk which is 3x more expensive (to sell)
 -------------------------------------------------------
 **\`TL;DR\`**
 If no money and no cow, start with:
-;work
+${prefix}work
 Collect more until you can buy a cow :relaxed:
 then
-;milk to get milk
-;sell milk to get more money $$$
+${prefix}milk to get milk
+${prefix}sell milk to get more money $$$
 and then you buy land
 more cow
 upgrade tier
 buy solar
 buy battery
 buy pasteurizers
-;clean milk`,
+${prefix}clean milk`,
 
 
             'how to get a gf': `
@@ -239,8 +253,8 @@ you know, i once found this beatiful app written in ruby on rails, *sob* we went
             'autofill': `
 It tries to guess ur shit
 **Example:**
-;he au = help autofill
-;bu m mi= buy max milk`,
+${prefix}he au = help autofill
+${prefix}bu m mi= buy max milk`,
 
 
             //Lattebot related
@@ -293,6 +307,7 @@ and look at the milanote roadmap [here](https://app.milanote.com/1JIXFg1A7IWS4Z?
                 `find the button`,
                 `punch an elderly person`,
                 `balance`,
+                `leaderboard`,
             ];
         var message = vars['message'];
         var args = vars['args'];
@@ -330,7 +345,7 @@ ${quest_help_info}
 
 **Guides** \`how to get a gf\`, \`starting guide\`, \`autofill\`
 
-**Lattebot related** [Donate](https://ko-fi.com/redstonerti#paymentModal "thanks man"), [Add to your server](https://discord.com/oauth2/authorize?client_id=722466765510148177&scope=bot&permissions=8 "big brain"), [Roadmap](https://app.milanote.com/1JIXFg1A7IWS4Z?p=RPYHur6CMy1 "massive brain")
+**Lattebot related** [Donate](https://ko-fi.com/redstonerti#paymentModal "thanks man"), [Add to your server](https://discord.com/oauth2/authorize?client_id=722466765510148177&scope=bot&permissions=8 "big brain"), [Roadmap](https://app.milanote.com/1JIXFg1A7IWS4Z?p=RPYHur6CMy1 "massive brain"), [top.gg](https://top.gg/bot/722466765510148177 "humongous noggin")
 
 **Random stuff** \`bok choy\`, \`version\`
 `);

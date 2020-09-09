@@ -9,16 +9,23 @@ Ctrl + K + 1
 Open all:
 Ctrl + K + J
 
-Milanote referral link: https://www.milanote.com/refer/rcBwWuNB5PWEzbiijF
-Milanote page: https://app.milanote.com/1JIXFg1A7IWS4Z?p=RPYHur6CMy1
+Custom emojis:
+bot.emojis.cache.forEach(emoji =>
+{
+    console.log(emoji.name);
+    console.log(emoji.id);
+});
+var latteland = guilds.get('722462513375215627');
+var testing_server = guilds.get('752779913937027122');
+var general_channel = testing_server.channels.cache.find(channel => channel.name === 'general');
+general_channel.send(`Emoji: <:ohgod:739035071507464314>`);
 */
 const Discord = require('discord.js');
 const bot = new Discord.Client();
 const { token } = require("./token.json");
-const PREFIX = ';';
-const version = '1.2.3';
+const DEFAULT_PREFIX = ';';
+const version = '1.2.4';
 const fs = require('fs');
-var upgrade_list_length;
 bot.commands = new Discord.Collection();
 const commandFiles = fs.readdirSync('./commands/').filter(file => file.endsWith('.js'));
 const { Client, MessageAttachment, MessageEmbed } = require('discord.js');
@@ -191,6 +198,12 @@ var Quests =
         'wait time': 0.1
     },
 };
+var GuildSettings =
+{
+    'prefix': DEFAULT_PREFIX,
+    'reaction images': true,
+    'allowed channels': [],
+};
 var QuestNames;
 var CommandList = [];
 var QuestMultipliers = [2, 5, -10];
@@ -202,26 +215,18 @@ for (const file of commandFiles)
 }
 bot.on('ready', async () =>
 {
-    if (SHOW_SERVERS)
-    {
-        bot.guilds.cache.forEach(guild =>
-        {
-            console.log(`${guild.name}: ${guild.memberCount}`);
-        });
-        console.log(bot.guilds.cache.size);
-    }
     let db = new sqlite.Database('./database.db', sqlite.OPEN_READWRITE);
     console.log('This bot is online!');
     bot.user.setPresence(
         {
             activity: {
-                name: 'prefix is ;'
+                name: 'default prefix is ' + DEFAULT_PREFIX
             }, status: 'online'
         }
     )
     PayRespects();
     QuestNames = exports.GetPropertyNames(Quests);
-    let query = `SELECT * FROM data WHERE is_default = ?`;
+    let query = `SELECT * FROM data WHERE is_default = ? `;
     var Row;
     var promise = new Promise((resolve =>
     {
@@ -240,11 +245,75 @@ bot.on('ready', async () =>
     var has_error = await promise;
     if (!has_error) 
     {
-        console.log(`You fucking dumbass. You didn't make the default row.`);
+        console.log(`You fucking dumbass.You didn't make the default row.`);
         return;
     }
     DefaultVariables = Row;
-    //db.run(`UPDATE data SET hologram = ?`, [0]);
+    bot.guilds.cache.forEach(guild =>
+    {
+        let query = `SELECT * FROM servers WHERE id = ? `;
+        var Row;
+        var promise = new Promise(async resolve =>
+        {
+            db.get(query, [guild.id], (err, row) =>
+            {
+                Row = row;
+                if (err)
+                {
+                    console.log(err);
+                    resolve(false);
+                    return;
+                }
+                if (row === undefined)
+                {
+                    console.log(`server ${guild.name} was undefined`);
+                    let InsertData = db.prepare(`INSERT INTO servers VALUES(?,?,?,?,?)`);
+                    InsertData.run(guild.id, guild.name, guild.memberCount, '{}', '');
+                    InsertData.finalize();
+                    db.close();
+                    resolve(false);
+                    return;
+                }
+                resolve(row);
+            });
+            var server = await promise;
+            if (server)
+            {
+                console.log(`no`);
+                return;
+            }
+            db.run(`UPDATE servers SET name = ?, members = ? WHERE id = ?`, [guild.name, guild.memberCount, guild.id]);
+        })
+    });
+    query = `SELECT CAST(id AS TEXT) FROM servers`;
+    var promise = new Promise(resolve =>
+    {
+        db.all(query, [], (err, row) =>
+        {
+            if (err)
+            {
+                console.log(err);
+                resolve(false);
+                return;
+            }
+            resolve(row);
+        });
+    })
+    var Ids = await promise;
+    if (!Ids)
+    {
+        return;
+    }
+    var guilds = bot.guilds.cache;
+    for (var count = 0; count < Ids.length; count++)
+    {
+        var guild_id = Ids[count]['CAST(id AS TEXT)'];
+        if (guilds.get(guild_id) === undefined)
+        {
+            db.run(`DELETE from servers where id = ?`, [guild_id]);
+        }
+    }
+    //db.run(`UPDATE servers SET settings = ?`, ['{}']);
 });
 bot.on('guildMemberAdd', async member =>
 {
@@ -264,8 +333,6 @@ bot.on('guildMemberAdd', async member =>
     const background = await Canvas.loadImage('./cliff.png');
     ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
 
-    /*ctx.strokeStyle = '#74037b';
-    ctx.strokeRect(5, 5, canvas.width, canvas.height);*/
     var coords = [650, 400];
     var size = 37.5;
     // Pick up the pen
@@ -284,6 +351,7 @@ bot.on('guildMemberAdd', async member =>
 
     const attachment = new Discord.MessageAttachment(canvas.toBuffer(), 'welcome-image.png');
 
+    if (!channel) return;
     channel.send(`Welcome to the server, ${member}!
 I hope you get what you deserve...
 
@@ -381,8 +449,8 @@ bot.on('guildCreate', async guild =>
         console.log(`Entered a new guild! ${guild.name}`);
     }
     let db = new sqlite.Database('./database.db', sqlite.OPEN_READWRITE);
-    let InsertData = db.prepare(`INSERT INTO servers VALUES(?,?,?)`);
-    InsertData.run(/*id*/guild.id, /*name*/guild.name, /*dead_people*/'');
+    let InsertData = db.prepare(`INSERT INTO servers VALUES(?,?,?,?,?)`);
+    InsertData.run(guild.id, guild.name, guild.memberCount, '{}', '');
     InsertData.finalize();
     db.close();
 });
@@ -397,14 +465,17 @@ bot.on('guildDelete', async guild =>
 });
 bot.on('message', async message =>
 {
+    var prefix = DEFAULT_PREFIX;
     var is_dm = true;
-    let db = new sqlite.Database('./database.db', sqlite.OPEN_READWRITE);
+    var guild_settings;
+    var guild = message.guild;
+    var db = new sqlite.Database('./database.db', sqlite.OPEN_READWRITE);
     var channel_name = message.channel.name;
+    if (message.author.bot) return;
     if (message.guild != null)
     {
-        if (channel_name.substring(0, 7) != 'testing' && bot.user.username === 'Tester bot') return;
+        //if (channel_name.substring(0, 7) != 'testing' && bot.user.username === 'Tester bot') return;
         if (channel_name.substring(0, 7) === 'testing' && bot.user.username === 'Lattebot') return;
-        if (message.author.username === 'Lattebot' || message.author.username === 'Tester bot') return;
         if (channel_name === 'the-letter-m') 
         {
             setTimeout(() =>
@@ -414,6 +485,59 @@ bot.on('message', async message =>
             return;
         }
         var is_dm = false;
+    }
+    if (!is_dm)
+    {
+        var query = `SELECT * FROM servers WHERE id = ? `;
+        var promise = new Promise((resolve =>
+        {
+            db.get(query, [guild.id], (err, row) =>
+            {
+                if (err)
+                {
+                    console.log(err);
+                    resolve(false);
+                }
+                resolve(row);
+            });
+        }))
+        var GuildData = await promise;
+        if (!GuildData)
+        {
+            return;
+        }
+        var original_guild_data = GuildData['settings'];
+        guild_settings = JSON.parse(GuildData['settings']);
+        var original_guild_settings = JSON.stringify(guild_settings);
+        var GuildSettingsNames = exports.GetPropertyNames(GuildSettings);
+        for (var count = 0; count < GuildSettingsNames.length; count++)
+        {
+            var setting_name = GuildSettingsNames[count];
+            if (guild_settings[setting_name] === undefined)
+            {
+                guild_settings[setting_name] = GuildSettings[setting_name];
+            }
+        }
+        var stringified_guild_settings = JSON.stringify(guild_settings);
+        if (original_guild_data === '{}')
+        {
+            db.run(`UPDATE servers SET settings = ? WHERE id = ?`, [stringified_guild_settings, guild.id]);
+        }
+    }
+    prefix = guild_settings['prefix'];
+    var reaction_images = guild_settings['reaction images'];
+    var allowed_channels = guild_settings['allowed channels'];
+    var is_allowed = true;
+    if (allowed_channels.length > 0)
+    {
+        is_allowed = false;
+        for (var count = 0; count < allowed_channels.length; count++)
+        {
+            if (channel_name === allowed_channels[count])
+            {
+                is_allowed = true;
+            }
+        }
     }
     {
         if (message.content.toLowerCase().substring(0, 5) === 'send ')
@@ -430,24 +554,28 @@ bot.on('message', async message =>
                 message.channel.send(`put out ${message.content.toLowerCase().substring(6)} `);
             }
         }
-        else if (message.content.toLowerCase() === 'noice')
+        else if (message.content.toLowerCase() === 'noice' && reaction_images)
         {
             const attachment = new MessageAttachment('./noice.png');
             message.channel.send(attachment);
         }
-        else if (message.content.toLowerCase() === 'bruh')
+        else if (message.content.toLowerCase() === 'bruh' && reaction_images)
         {
             const attachment = new MessageAttachment('./bruh.png');
             message.channel.send(attachment);
         }
     }
+    if (!is_allowed) return;
     message.content = message.content.toLowerCase();
-    if (message.content.substring(0, PREFIX.length) != PREFIX || message.content.substring(0, 3) === ';-;')
+    if (prefix === ';')
+        if (message.content.substring(0, 3) === ';-;')
+            return null;
+    if (message.content.substring(0, prefix.length) != prefix)
         return null;
-    let time = Math.round(new Date().getTime() / 1000);
-    let id = message.author.id;
-    let name = message.author.tag;
-    let query = `SELECT * FROM data WHERE id = ? `;
+    var time = Math.round(new Date().getTime() / 1000);
+    var id = message.author.id;
+    var name = message.author.tag;
+    query = `SELECT * FROM data WHERE id = ? `;
     var Variables = DefaultVariables;
     Variables['id'] = id;
     Variables['name'] = name;
@@ -501,12 +629,11 @@ bot.on('message', async message =>
     DefaultData[0] = 0;
     DefaultData[1] = 0;
     DefaultData[2] = '';
-    upgrade_list_length = Object.keys(Upgrades).length;
-    let args = message.content.toLowerCase().substring(PREFIX.length).split(' ');
+    let args = message.content.toLowerCase().substring(prefix.length).split(' ');
     vars =
     {
         'message': message,
-        'prefix': PREFIX,
+        'prefix': prefix,
         'args': args,
         'db': db = new sqlite.Database('./database.db', sqlite.OPEN_READWRITE),
         'time': time,
@@ -523,6 +650,7 @@ bot.on('message', async message =>
         'DefaultData': DefaultData,
         'question marks': question_marks,
         'Variables': Variables,
+        'guild settings': guild_settings,
     };
     for (var count = 0; count < Object.keys(Variables).length; count++)
     {
@@ -643,6 +771,7 @@ function PayRespects()
             {
                 var guild_id = row[count]['CAST(id AS TEXT)'].toString();
                 var guild = guilds.get(guild_id);
+                if (!guild) continue;
                 var channel = guild.channels.cache.find(ch => ch.name === 'graveyard');
                 if (channel)
                 {
@@ -678,7 +807,7 @@ function PayRespects()
         PayRespects();
     }, exports.SecondsUntilTime(TIME_OF_RESPECT) * 1000 + 2000);
 }
-exports.Say = function (message, Title, description, colour, display_avatar)
+exports.Say = function (message, Title, description, colour, display_avatar, second_title, second_description, third_title, third_description)
 {
     if (display_avatar === undefined)
     {
@@ -689,14 +818,18 @@ exports.Say = function (message, Title, description, colour, display_avatar)
     {
         colour = 0x3498db;
     }
-    var embed;
+    var embed = new MessageEmbed().setTitle(Title).setDescription(description);
     if (display_avatar)
     {
-        embed = new MessageEmbed().setTitle(Title).setAuthor(name, message.author.displayAvatarURL()).setColor(colour).setDescription(description);
+        embed.setAuthor(name, message.author.displayAvatarURL()).setColor(colour);
     }
-    else
+    if (second_description != undefined && second_title != undefined)
     {
-        embed = new MessageEmbed().setTitle(Title).setColor(colour).setDescription(description);
+        embed.addField(second_title, second_description, true);
+    }
+    if (third_description != undefined && third_title != undefined)
+    {
+        embed.addField(third_title, third_description, true);
     }
     message.channel.send(embed);
 }
@@ -1075,6 +1208,7 @@ exports.GetUpgrade = function (upgrade_slot)
     var upgrades = p_vars['upgrades'];
     var id = p_vars['id'];
     var db = p_vars['db'];
+    var upgrade_list_length = exports.GetPropertyNames(p_vars['Upgrades']);
     var upgrade_list = upgrades.toString().split(' ');
     if (upgrade_list.length < upgrade_list_length)
     {

@@ -7,6 +7,7 @@ module.exports = {
     {
         var message = vars['message'];
         var args = vars['args'];
+        var prefix = vars['prefix'];
         funcs.Say(message, 'pong', '');
     }
 }

@@ -5,82 +5,6 @@ module.exports = {
     description: "Tells you what you have",
     async execute(vars)
     {
-        /*var balance = vars['balance'];
-        var milk = vars['milk'];
-        var cow = vars['cow'];
-        var land = vars['land'];
-        var work_times = vars['work times'];
-        var pasteurizer = vars['pasteurizer'];
-        var battery = vars['battery'];
-        var animal_feed = vars['animal feed'];
-        var watts = vars['watts'];
-        var solar_panel = vars['solar panel'];
-        var wind_turbine = vars['wind turbine'];
-        var clean_milk = vars['clean milk'];
-        var time = vars['time'];
-        var last_powered = vars['last powered'];
-        var id = vars['id'];
-        var db = vars['db'];
-        var seed = vars['seed'];
-        var planted_farm = vars['planted farm'];
-        var farm = vars['farm'];
-        var grinder = vars['grinder'];
-        var last_milked = vars['last milked'];
-        var last_harvested = vars['last harvested'];
-        var corn = vars['corn'];
-        var player_tier = vars['player tier'];
-        watts = funcs.CalcPower();
-        var WattsPerSec = solar_panel * 0.1 + wind_turbine * 0.03;
-        var WorkRank = Math.min(Math.floor(work_times / 5), 18);
-        var clean_milk_info = ``;
-        var pasteurizer_info = ``;
-        var battery_info = ``;
-        var solar_panel_info = ``;
-        var wind_turbine_info = ``;
-        var watt_info = ``;
-        var animal_feed_info = ``;
-        var corn_info = ``;
-        var seed_info = ``;
-        var grinder_info = ``;
-        var farm_info = ``;
-        var watts_per_sec_info = ``;
-        var next_corn_harvest_info = ``;
-        var next_milk_harvest_info = ``;
-        if (player_tier >= 1)
-        {
-            clean_milk_info = `\n🍼 Clean milk: ${funcs.ConvertToUnit(clean_milk, 'K M B T Q')}`;
-            pasteurizer_info = `\n⚙️ Pasteurizer: ${funcs.ConvertToUnit(pasteurizer, 'K M B T Q')}`;
-            battery_info = `\n🔋 Battery: ${funcs.ConvertToUnit(battery, 'K M B T Q')}`;
-            solar_panel_info = `\n⛅ Solar panel: ${funcs.ConvertToUnit(solar_panel, 'K M B T Q')}`;
-            wind_turbine_info = `\n💨 Wind turbine: ${funcs.ConvertToUnit(wind_turbine, 'K M B T Q')}`;
-            watt_info = `\n⚡ Watts: ${funcs.ConvertToUnit(watts, 'K M G T P')}W / ${funcs.ConvertToUnit(battery * 10000, 'K M G T P')}W`;
-            watts_per_sec_info = `\nWatts/sec: \`${funcs.ConvertToUnit(WattsPerSec, 'KW MW TW')}\``;
-        }
-        if (player_tier >= 2)
-        {
-            animal_feed_info = `\n🌾 Animal feed: ${funcs.ConvertToUnit(animal_feed, 'K M B T Q')}`;
-            corn_info = `\n🌽 Corn: ${funcs.ConvertToUnit(corn, 'K M B T Q')}`;
-            seed_info = `\n🌿 Seed: ${funcs.ConvertToUnit(seed, 'K M B T Q')}`;
-            grinder_info = `\n🗜️ Grinder: ${funcs.ConvertToUnit(grinder, 'K M B T Q')}`;
-            farm_info = `\n🚜 Farm: ${funcs.ConvertToUnit(farm, 'K M B T Q')} (${funcs.ConvertToUnit(planted_farm, `K M B T Q`)} planted)`;
-            next_corn_harvest_info = `Next full corn harvest: \`${funcs.SecToHMS(Math.max(last_harvested + 10000 - time, 0))}\``;
-            next_milk_harvest_info = `Next full milk harvest: \`${funcs.SecToHMS(Math.max(last_milked + 10000 - time, 0))}\``;
-        }
-        funcs.Say(message, ``, `
-💰 Balance: ${funcs.ConvertToUnit(balance, 'K M B T Q')} milkesh
-🏅 Work rank: ${funcs.ConvertToUnit(WorkRank, 'K M B T Q')} / 18
-#️⃣ Times worked: ${funcs.ConvertToUnit(work_times, 'K M B T Q')}
-🧮 Tier: ${funcs.ConvertToUnit(player_tier, `K M B T Q`)}
-🥛 Milk: ${funcs.ConvertToUnit(milk, 'K M B T Q')}
-🐄 Cows: ${funcs.ConvertToUnit(cow, 'K M B T Q')}/${funcs.ConvertToUnit(land * 5, 'K M B T Q')}
-⛳ Land: ${funcs.ConvertToUnit(land, 'K M B T Q')} / 200${clean_milk_info}${pasteurizer_info}${battery_info}${solar_panel_info}${wind_turbine_info}${animal_feed_info}${corn_info}${seed_info}${grinder_info}${farm_info}${watt_info}
--------------------------------------------------------${watts_per_sec_info}
-Milk/sec: \`${funcs.ConvertToUnit(cow / 100, 'K M B T Q')}\`
-${next_corn_harvest_info}
-${next_milk_harvest_info}
-`, undefined, true);
-        //Recommended: \`${funcs.ConvertToUnit(cow / 10, 'K M G')}W\`/sec + \`${funcs.ConvertToUnit(cow * 1000, 'K M G')}W\` capacity
-    */
         var menu = `_ _`;
         var message = vars['message'];
         var balance_settings = vars['balance settings'];
@@ -126,8 +50,8 @@ ${next_milk_harvest_info}
                  🥛 Milk / sec: \`${funcs.ConvertToUnit(cow / 100, 'K M B T Q')}\`${watts_per_sec_info}${next_corn_harvest_info}${next_milk_harvest_info}
             `,
             'leaderboard': `
-                 💰 Milkesh: \`${Places[0]}\` / \`${Places[1]}\`
-                 #️⃣ Times worked: \`${Places[2]}\` / \`${Places[3]}\`
+                 💰 Milkesh: \`${Places[1]}\` / \`${Places[0]}\`
+                 #️⃣ Times worked: \`${Places[2]}\` / \`${Places[0]}\`
             `,
         };
         BalanceSettings = InterpretBalanceSettings(vars, other_displays);
@@ -377,6 +301,10 @@ async function GetLeaderboard(vars)
             break;
         }
     }
+    if (balance_place > balances.length - 1)
+    {
+        balance_place = balances.length - 1;
+    }
     for (var count = 0; count < work_times.length; count++)
     {
         if (work_times[count]['CAST(id AS TEXT)'] === id)
@@ -385,5 +313,9 @@ async function GetLeaderboard(vars)
             break;
         }
     }
-    return [balance_place, balances.length, work_times_place, work_times.length];
+    if (work_times_place > balances.length - 1)
+    {
+        work_times_place = balances.length - 1;
+    }
+    return [balances.length - 1, balance_place, work_times_place];
 }
