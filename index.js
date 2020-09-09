@@ -359,7 +359,7 @@ I hope you get what you deserve...
 });
 bot.on('guildMemberRemove', async member =>
 {
-    if (member.guild === null) return;
+    if (member.guild === null || member.user.username === 'Tester bot' || member.user.username === 'Lattebot') return;
     if (SHOW_MEMBERS)
     {
         console.log(`member ${member.user.username} left guild ${member.guild.name}`);
@@ -474,7 +474,7 @@ bot.on('message', async message =>
     if (message.author.bot) return;
     if (message.guild != null)
     {
-        //if (channel_name.substring(0, 7) != 'testing' && bot.user.username === 'Tester bot') return;
+        if (channel_name.substring(0, 7) != 'testing' && bot.user.username === 'Tester bot') return;
         if (channel_name.substring(0, 7) === 'testing' && bot.user.username === 'Lattebot') return;
         if (channel_name === 'the-letter-m') 
         {
@@ -508,7 +508,6 @@ bot.on('message', async message =>
         }
         var original_guild_data = GuildData['settings'];
         guild_settings = JSON.parse(GuildData['settings']);
-        var original_guild_settings = JSON.stringify(guild_settings);
         var GuildSettingsNames = exports.GetPropertyNames(GuildSettings);
         for (var count = 0; count < GuildSettingsNames.length; count++)
         {

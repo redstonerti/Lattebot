@@ -108,6 +108,7 @@ module.exports = {
         }
         var reaction_images = guild_settings['reaction images'];
         var allowed_channels = guild_settings['allowed channels'];
+        var allowed_channels_display = ``;
         if (allowed_channels.length === 0)
         {
             allowed_channels = `None (\`Lattebot is accesible anywhere\`)`;
@@ -120,7 +121,6 @@ module.exports = {
             }
         }
         var prefix = guild_settings['prefix'];
-        var allowed_channels_display = ``;
         var menu = `
         Prefix: \`${prefix}\`
         Reaction images: \`${reaction_images}\`
