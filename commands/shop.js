@@ -17,21 +17,26 @@ module.exports = {
         var id = vars['id'];
         var args = vars['args'];
         var upgrades = vars['upgrades'];
-        var ShopType = funcs.AutoFill(message, message.content.substring(vars['command length'] + 2), ['items', 'upgrades'], true);
+        var ShopType = '';
+        if (args.length > 1)
+        {
+            ShopType = funcs.AutoFill(message.content.substring(vars['command length'] + 2), ['items', 'upgrades']);
+            if (ShopType === null) return null;
+        }
+        else
+        {
+            ShopType = 'items';
+        }
         var Upgrades = vars['Upgrades'];
         var UpgradeNames = vars['UpgradeNames'];
         var UpgradeCount = Object.keys(Upgrades).length;
         var Strikethrough = ``;
         var MaxTier = 0;
-        if (ShopType === null)
-        {
-            return null;
-        }
-        ShopType = ShopType[0].toString();
         if (ShopType != 'items' && ShopType != 'upgrades')
         {
             return null;
         }
+        console.log(ShopType);
         for (var count = 1; count <= player_tier + 1; count++)
         {
             TierList.push([count]);
@@ -69,7 +74,7 @@ module.exports = {
                 }
                 else
                 {
-                    BoughtOrPrice = `**Price: $${funcs.ConvertToUnit(Upgrades['tier']['prices'][count - 1], `K M B`)}**`;
+                    BoughtOrPrice = `**Price: $${funcs.ConvertToUnit(Upgrades['tier']['prices'][count - 1])}**`;
                 }
                 shop = shop + `**TIER ${count}** | ${BoughtOrPrice}\n\n`;
             }
@@ -103,13 +108,14 @@ module.exports = {
                 {
                     var BuyInfo = ``;
                     var SellInfo = ``;
+                    if (item['buy price'] === null && item['sell price'] === null) continue;
                     if (item['buy price'] != null)
                     {
-                        BuyInfo = ` \`Buy: ${funcs.ConvertToUnit(item['buy price'], `K M B`)}\``;
+                        BuyInfo = ` \`Buy: ${funcs.ConvertToUnit(item['buy price'])}\``;
                     }
                     if (item['sell price'] != null)
                     {
-                        SellInfo = ` \`Sell: ${funcs.ConvertToUnit(item['sell price'], `K M B`)}\``;
+                        SellInfo = ` \`Sell: ${funcs.ConvertToUnit(item['sell price'])}\``;
                     }
                     if (BuyInfo != `` && SellInfo != ``)
                     {
@@ -124,7 +130,7 @@ module.exports = {
                     var PriceOrCompleted = ``;
                     if (CurrentLevel < Prices.length)
                     {
-                        PriceOrCompleted = `\`Price: ${funcs.ConvertToUnit(Prices[CurrentLevel], `K M B`)}\``;
+                        PriceOrCompleted = `\`Price: ${funcs.ConvertToUnit(Prices[CurrentLevel])}\``;
                     }
                     else
                     {

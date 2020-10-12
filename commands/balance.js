@@ -1,5 +1,6 @@
 const { Client, MessageAttachment, MessageEmbed } = require('discord.js');
 const funcs = require("../index.js");
+const plant = require('./plant.js');
 module.exports = {
     name: 'balance',
     description: "Tells you what you have",
@@ -17,11 +18,14 @@ module.exports = {
         var max_tier = vars['max tier'];
         var watts_per_sec_info = ``;
         var next_corn_harvest_info = ``;
+        var planted_farm = JSON.parse(vars['planted farm']);
         var watt_info = ``;
+        var waste_info = ``;
+        var waste_deficiency = funcs.GetWasteDeficiency();
         var next_milk_harvest_info = ``;
+        var next_sugarcane_harvest_info = ``;
         var WattsPerSec = solar_panel * 0.1 + wind_turbine * 0.03;
         var time = vars['time'];
-        var last_harvested = vars['last harvested'];
         var battery = vars['battery'];
         var watts = funcs.CalcPower();
         var last_milked = vars['last milked'];
@@ -29,12 +33,17 @@ module.exports = {
         if (player_tier >= 1)
         {
             watts_per_sec_info = `\n                 ⚡ Watts/sec: \`${funcs.ConvertToUnit(WattsPerSec, 'KW MW TW')}\``;
-            watt_info = `\n                 ⚡ Watts: ${funcs.ConvertToUnit(watts, 'K M G T P')} W / ${funcs.ConvertToUnit(battery * 10000, 'K M G T P')} W`;
+            watt_info = `\n                 ⚡ Watts: ${funcs.ConvertToUnit(watts, 'K M G T P')}W / ${funcs.ConvertToUnit(battery * 10000, 'K M G T P')}W`;
         }
         if (player_tier >= 2)
         {
-            next_corn_harvest_info = `\n                 🌽 Next full corn harvest: \`${funcs.SecToHMS(Number(Math.max(last_harvested + 10000 - time, 0)))}\``;
+            next_corn_harvest_info = `\n                 🌽 Next full corn harvest: \`${funcs.SecToHMS(Number(Math.max(Number(planted_farm['corn harvest']) + 10000 - time, 0)))}\``;
             next_milk_harvest_info = `\n                 🥛 Next full milk harvest: \`${funcs.SecToHMS(Number(Math.max(last_milked + 10000 - time, 0)))}\``;
+        }
+        if (player_tier >= 3)
+        {
+            next_sugarcane_harvest_info = `\n                 <:sugarcane:754046312047050842> Next full sugarcane harvest: \`${funcs.SecToHMS(Number(Math.max(planted_farm['sugarcane harvest'] + 10000 - time, 0)))}\``;
+            waste_info = `\n                 <:wastebarrel:754290080444842045> Waste deficieny: ${waste_deficiency}%`;
         }
         var Places = await GetLeaderboard(vars);
         /*spacing:     */
@@ -44,10 +53,10 @@ module.exports = {
                  💰 Balance: ${funcs.ConvertToUnit(vars['balance'], 'K M B T Q')} milkesh
                  🧮 Tier: ${funcs.ConvertToUnit(vars['player tier'], `K M B T Q`)}${watt_info}
                  🏅 Work rank: ${funcs.ConvertToUnit(Math.min(Math.floor(vars['work times'] / 5), 18), 'K M B T Q')} / 18
-                 #️⃣ Times worked: ${funcs.ConvertToUnit(vars['work times'], 'K M B T Q')}
+                 #️⃣ Times worked: ${funcs.ConvertToUnit(vars['work times'], 'K M B T Q')}${waste_info}
                     `,
             'info': `
-                 🥛 Milk / sec: \`${funcs.ConvertToUnit(cow / 100, 'K M B T Q')}\`${watts_per_sec_info}${next_corn_harvest_info}${next_milk_harvest_info}
+                 🥛 Milk / sec: \`${funcs.ConvertToUnit(cow / 100, 'K M B T Q')}\`${watts_per_sec_info}${next_corn_harvest_info}${next_sugarcane_harvest_info}${next_milk_harvest_info}
             `,
             'leaderboard': `
                  💰 Milkesh: \`${Places[1]}\` / \`${Places[0]}\`
@@ -90,7 +99,7 @@ module.exports = {
                 }
                 if (item['tier'] === count)
                 {
-                    menu += `     ${item['emoji']} ${funcs.CapitalFirst(name)}: ${funcs.ConvertToUnit(vars[name], `K M B`)}${cap_info}\n`;
+                    menu += `     ${item['emoji']} ${funcs.CapitalFirst(name)}: ${funcs.ConvertToUnit(vars[name])}${cap_info}\n`;
                 }
             }
         }
@@ -163,13 +172,9 @@ function InterpretBalanceSettings(vars, other_displays)
         db.run(`UPDATE data SET balance_settings = ? WHERE id = ?`, [updated_settings, id]);
         return [tier_settings, other_settings];
     }
-    var Results = funcs.AutoFill(message, args[1], ['open', 'close']);
-    if (Results === null)
-    {
-        return null;
-    }
+    var open_or_close = funcs.AutoFill(args[1], ['open', 'close']);
+    if (open_or_close === null) return null;
     var set_to;
-    var open_or_close = Results[0].toString();
     if (open_or_close === 'open')
     {
         set_to = '1';
@@ -181,18 +186,10 @@ function InterpretBalanceSettings(vars, other_displays)
     var tier = Number(args[2]);
     var OtherNames = funcs.GetPropertyNames(other_displays);
     OtherNames.push('all');
-    var NewResults = null;
     if (isNaN(tier))
     {
-        NewResults = funcs.AutoFill(message, args[2], OtherNames);
-        if (NewResults === null)
-        {
-            return null;
-        }
-        else
-        {
-            var word = NewResults[0].toString();
-        }
+        var word = funcs.AutoFill(args[2], OtherNames);
+        if (word === null) return null;
     }
     if (isNaN(tier) === false)
     {

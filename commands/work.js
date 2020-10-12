@@ -22,13 +22,13 @@ module.exports = {
             return;
         }
         var reward = 0;
-        reward = 40 + Math.min(Math.floor((work_times + 1) / 5) * 20, 380);
+        reward = 80 + Math.min(Math.floor((work_times + 1) / 5) * 40, 340);
         var RankMessage = ``;
-        if ((work_times + 1) % 5 === 0 && Math.floor((work_times + 1) / 5) * 20 < 380)
+        if ((work_times + 1) % 5 === 0 && Math.floor((work_times + 1) / 5) * 40 < 340)
         {
             RankMessage = `\nBtw, you just upgraded your rank to level ${Math.floor((work_times + 1) / 5)}`;
         }
-        message.channel.send(`Thank you for working for me ${message.author.username}. Here's \`${funcs.ConvertToUnit(reward, `K M B`)}\` milkesh for your efforts\nYou now have \`${funcs.ConvertToUnit(balance + reward, `K M B`)}\` milkesh` + RankMessage);
+        message.channel.send(`Thank you for working for me ${message.author.username}. Here's \`${funcs.ConvertToUnit(reward)}\` milkesh for your efforts\nYou now have \`${funcs.ConvertToUnit(balance + reward)}\` milkesh` + RankMessage);
         db.run(`UPDATE data SET balance = ? WHERE id = ?`, [(balance + reward).toFixed(2), id]);
         db.run(`UPDATE data SET work_times = ? WHERE id = ?`, [work_times + 1, id]);
         db.run(`UPDATE data SET last_worked = ? WHERE id = ?`, [time, id]);

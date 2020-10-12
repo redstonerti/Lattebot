@@ -11,12 +11,8 @@ module.exports = {
         var balance = vars['balance'];
         var UpgradeNames = vars['UpgradeNames'];
         var Upgrades = vars['Upgrades'];
-        var upgrade_name = funcs.AutoFill(message, message.content.substring(vars['command length'] + 2), UpgradeNames, true);
-        if (upgrade_name === null)
-        {
-            return null;
-        }
-        upgrade_name = upgrade_name[0].toString();
+        var upgrade_name = funcs.AutoFill(message.content.substring(vars['command length'] + 2), UpgradeNames, true);
+        if (upgrade_name === null) return null;
         var MyTier = funcs.GetUpgrade(0);
         var upgrade_tier = Upgrades[upgrade_name]['tier'];
         var upgrade = Upgrades[upgrade_name];
@@ -35,13 +31,13 @@ module.exports = {
         }
         if (balance >= current_upgrade_price)
         {
-            message.channel.send(`You just upgraded ${upgrade_name} to \`${upgrade_level + 1}\`!\nYou spent \`${funcs.ConvertToUnit(current_upgrade_price, `K M B`)}\` milkesh\nYou now have \`${funcs.ConvertToUnit(balance - current_upgrade_price, `K M B`)}\` milkesh`);
+            message.channel.send(`You just upgraded ${upgrade_name} to \`${upgrade_level + 1}\`!\nYou spent \`${funcs.ConvertToUnit(current_upgrade_price)}\` milkesh\nYou now have \`${funcs.ConvertToUnit(balance - current_upgrade_price)}\` milkesh`);
             db.run(`UPDATE data SET balance = ?, upgrades = ? WHERE id = ?`, [balance - current_upgrade_price, funcs.GetUpgraded(upgrade['slot'], 1), id]);
             return;
         }
         else
         {
-            message.channel.send(`You don't have enough money for that hun :(\n${upgrade_name} level \`${upgrade_level + 1}\` costs \`${funcs.ConvertToUnit(current_upgrade_price, `K M B`)}\`\nbut you only have \`${funcs.ConvertToUnit(balance, `K M b`)}\``);
+            message.channel.send(`You don't have enough money for that hun :(\n${upgrade_name} level \`${upgrade_level + 1}\` costs \`${funcs.ConvertToUnit(current_upgrade_price)}\`\nbut you only have \`${funcs.ConvertToUnit(balance)}\``);
         }
     }
 }

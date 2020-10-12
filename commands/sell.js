@@ -15,8 +15,10 @@ module.exports = {
         var cow = vars['cow'];
         var last_milked = vars['last milked'];
         var milk_storage = vars['milk storage'];
+        var ice_cream = vars['ice cream'];
         var ItemNames = vars['ItemNames'];
         var land = vars['land'];
+        var freezer = vars['freezer'];
         var Items = vars['Items'];
         var CowMax = land * 5;
         var ItemStuff = funcs.GetItem();
@@ -25,8 +27,7 @@ module.exports = {
             return;
         }
         item = ItemStuff[0].toString();
-        var NumberInList = ItemStuff[2];
-        var IsMax = ItemStuff[3];
+        var IsMax = ItemStuff[2];
         var SellPrice = Items[item]['sell price'];
         var amount = 0;
         var CurrentItemAmount = Number(vars[item.toString()]);
@@ -62,15 +63,17 @@ module.exports = {
             message.channel.send(`You don't have any ${item}`);
             return;
         }
-        var HasEnough = true;
-        var CowDeletionAmount = 0;
         if (amount > CurrentItemAmount)
         {
             HasEnough = false;
             amount = CurrentItemAmount;
         }
+        var HasEnough = true;
+        var CowDeletionAmount = 0;
+        var IceCreamDeletionAmount = 0;
         total = amount * SellPrice;
         var CowDeletion = ``;
+        var IceCreamDeletion = ``;
         if (item === `land`)
         {
             if ((land - amount) * 5 < cow)
@@ -81,15 +84,24 @@ module.exports = {
                 db.run(`UPDATE data SET balance = ? WHERE id = ?`, [(balance + CowDeletionAmount * 123).toFixed(2), id]);
             }
         }
+        if (item === `freezer`)
+        {
+            if ((freezer - amount) * 1500 < ice_cream)
+            {
+                IceCreamDeletionAmount = ice_cream - (freezer - amount) * 1500;
+                IceCreamDeletion = `\nBtw, because you sold too many freezers, you don't have enough space for \`${funcs.ConvertToUnit(IceCreamDeletionAmount)}\` ice cream so i had to sell it.\nYou got \`${funcs.ConvertToUnit(IceCreamDeletionAmount * 2.85)} milkesh\` for selling that ice cream`;
+                db.run(`UPDATE data SET ice_cream = ? WHERE id = ?`, [ice_cream - IceCreamDeletionAmount, id]);
+                db.run(`UPDATE data SET balance = ? WHERE id = ?`, [(balance + IceCreamDeletionAmount * 2.85).toFixed(2), id]);
+            }
+        }
         if (HasEnough == false)
         {
-            message.channel.send(`You don't have enough \`${item}\`, but that's alright, i bought it all for \`${funcs.ConvertToUnit(total)}\` milkesh\nYou now have \`${funcs.ConvertToUnit(balance + CurrentItemAmount * SellPrice)}\` milkesh` + CowDeletion);
+            message.channel.send(`You don't have enough \`${item}\`, but that's alright, i bought it all for \`${funcs.ConvertToUnit(total)}\` milkesh\nYou now have \`${funcs.ConvertToUnit(balance + CurrentItemAmount * SellPrice)}\` milkesh` + CowDeletion + IceCreamDeletion);
             db.run(`UPDATE data SET ${item.replace(' ', '_')} = ? WHERE id = ?`, [0, id]);
-
         }
         else
         {
-            message.channel.send(`You sold \`${funcs.ConvertToUnit(amount)} ${item}\` for \`${funcs.ConvertToUnit(total)}\` milkesh\nYou now have \`${funcs.ConvertToUnit(balance + total)}\` milkesh` + CowDeletion);
+            message.channel.send(`You sold \`${funcs.ConvertToUnit(amount)} ${item}\` for \`${funcs.ConvertToUnit(total)}\` milkesh\nYou now have \`${funcs.ConvertToUnit(balance + total)}\` milkesh` + CowDeletion + IceCreamDeletion);
             db.run(`UPDATE data SET ${item.replace(' ', '_')} = ? WHERE id = ?`, [CurrentItemAmount - amount, id]);
         }
         db.run(`UPDATE data SET balance = ? WHERE id = ?`, [(balance + total).toFixed(2), id]);

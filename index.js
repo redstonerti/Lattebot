@@ -24,14 +24,14 @@ const Discord = require('discord.js');
 const bot = new Discord.Client();
 const { token } = require("./token.json");
 const DEFAULT_PREFIX = ';';
-const version = '1.2.4';
+const version = '1.2.5';
 const fs = require('fs');
 bot.commands = new Discord.Collection();
 const commandFiles = fs.readdirSync('./commands/').filter(file => file.endsWith('.js'));
+const ImageReactions = fs.readdirSync('./image_reactions/').filter(file => file.endsWith('.png'));
 const { Client, MessageAttachment, MessageEmbed } = require('discord.js');
 const sqlite = require('sqlite3').verbose();
 const Canvas = require('canvas');
-const TIME_OF_RESPECT = [24, 00, 00];
 const SHOW_SERVERS = true;
 const SHOW_MEMBERS = false;
 var p_vars;
@@ -51,15 +51,6 @@ var Items =
         'cap calculation': null,
         'unique attribute': ''
     },
-    'clean milk': {
-        'buy price': 2.52,
-        'sell price': 2.4,
-        'tier': 1,
-        'emoji': '🍼',
-        'cap': null,
-        'cap calculation': null,
-        'unique attribute': ''
-    },
     'cow': {
         'buy price': 130,
         'sell price': 123,
@@ -75,6 +66,15 @@ var Items =
         'tier': 0,
         'emoji': '⛳',
         'cap': 200,
+        'cap calculation': null,
+        'unique attribute': ''
+    },
+    'clean milk': {
+        'buy price': null,
+        'sell price': 2.4,
+        'tier': 1,
+        'emoji': '🍼',
+        'cap': null,
         'cap calculation': null,
         'unique attribute': ''
     },
@@ -100,7 +100,7 @@ var Items =
         'buy price': 150,
         'sell price': 142,
         'tier': 1,
-        'emoji': '⛅',
+        'emoji': '<:solar_panel:760558035453607986>',
         'cap': null,
         'cap calculation': null,
         'unique attribute': '0.1W / sec'
@@ -109,7 +109,7 @@ var Items =
         'buy price': 50,
         'sell price': 47,
         'tier': 1,
-        'emoji': '💨',
+        'emoji': '<:wind_turbine:760559305031811183>',
         'cap': null,
         'cap calculation': null,
         'unique attribute': '0.03W / sec'
@@ -142,8 +142,8 @@ var Items =
         'unique attribute': ''
     },
     'grinder': {
-        'buy price': 780,
-        'sell price': 742,
+        'buy price': 1000,
+        'sell price': 952,
         'tier': 2,
         'emoji': '🗜️',
         'cap': null,
@@ -151,10 +151,118 @@ var Items =
         'unique attribute': ''
     },
     'farm': {
-        'buy price': 970,
-        'sell price': 923,
+        'buy price': 1200,
+        'sell price': 1142,
         'tier': 2,
         'emoji': '🚜',
+        'cap': null,
+        'cap calculation': null,
+        'unique attribute': ''
+    },
+    'sugar': {
+        'buy price': 5,
+        'sell price': null,
+        'tier': 3,
+        'emoji': '<:sugar:754045819518451876>',
+        'cap': null,
+        'cap calculation': null,
+        'unique attribute': ''
+    },
+    'sugarcane': {
+        'buy price': 1.5,
+        'sell price': null,
+        'tier': 3,
+        'emoji': '<:sugarcane:754046312047050842>',
+        'cap': null,
+        'cap calculation': null,
+        'unique attribute': ''
+    },
+    'ice cream': {
+        'buy price': 3,
+        'sell price': 2.85,
+        'tier': 3,
+        'emoji': '🍦',
+        'cap': null,
+        'cap calculation': 'freezer * 1500',
+        'unique attribute': ''
+    },
+    'butter': {
+        'buy price': 5,
+        'sell price': 4.76,
+        'tier': 3,
+        'emoji': '🧈',
+        'cap': null,
+        'cap calculation': null,
+        'unique attribute': ''
+    },
+    'cream': {
+        'buy price': 12,
+        'sell price': null,
+        'tier': 3,
+        'emoji': '<:cream:760528921799163935>',
+        'cap': null,
+        'cap calculation': null,
+        'unique attribute': ''
+    },
+    'mill': {
+        'buy price': 1200,
+        'sell price': 1142,
+        'tier': 3,
+        'emoji': '<:windmill:754046919604699159>',
+        'cap': null,
+        'cap calculation': null,
+        'unique attribute': ''
+    },
+    'freezer': {
+        'buy price': 2500,
+        'sell price': 2380,
+        'tier': 3,
+        'emoji': '<:freezer:754046659012460715>',
+        'cap': null,
+        'cap calculation': null,
+        'unique attribute': ''
+    },
+    'waste filter': {
+        'buy price': 9000,
+        'sell price': 8571,
+        'tier': 3,
+        'emoji': '<:waste_filter:760556205528580116>',
+        'cap': null,
+        'cap calculation': null,
+        'unique attribute': ''
+    },
+    'centrifuge': {
+        'buy price': 1750,
+        'sell price': 1666,
+        'tier': 3,
+        'emoji': '<:centrifuge:760530789506744321>',
+        'cap': null,
+        'cap calculation': null,
+        'unique attribute': ''
+    },
+    'churner': {
+        'buy price': 1450,
+        'sell price': 1380,
+        'tier': 3,
+        'emoji': '<:churner:760560242035130371>',
+        'cap': null,
+        'cap calculation': null,
+        'unique attribute': ''
+    },
+    'mixer': {
+        'buy price': 3000,
+        'sell price': 2857,
+        'tier': 3,
+        'emoji': '<:mixer:761218735293726770>',
+        'cap': null,
+        'cap calculation': null,
+        'unique attribute': ''
+    },
+    'waste barrel': {
+        'buy price': null,
+        'sell price': null,
+        'tier': 3,
+        'emoji': '<:wastebarrel:754290080444842045>',
         'cap': null,
         'cap calculation': null,
         'unique attribute': ''
@@ -164,7 +272,7 @@ var Upgrades =
 {
     'tier':
     {
-        'prices': [50000, 750000],
+        'prices': [50000, 350000, 3000000],
         'tier': 0,
         'emoji': '🧮',
         'slot': 0,
@@ -172,12 +280,20 @@ var Upgrades =
     },
     'animal feeding':
     {
-        'prices': [500000],
+        'prices': [1000000],
         'tier': 2,
         'emoji': '🌾',
         'slot': 1,
-        'description': `This upgrade makes animal feed twice as effective. Each animal feed will give you 2 extra milk instead of 1. However it will also increase it's price in the shop by 1.8 milkesh.`
+        'description': `This upgrade makes animal feed \`2x\` as effective. Each animal feed will give you 2 extra milk instead of 1. However it will also increase it's price in the shop by 1.8 milkesh.`
     },
+    'liquid processing':
+    {
+        'prices': [5000000],
+        'tier': 3,
+        'emoji': '⚗️',
+        'slot': 2,
+        'description': `This upgrade reduces waste production by \`75%\``
+    }
 
 };
 var Quests =
@@ -203,9 +319,11 @@ var GuildSettings =
     'prefix': DEFAULT_PREFIX,
     'reaction images': true,
     'allowed channels': [],
+    'welcoming': true,
 };
 var QuestNames;
 var CommandList = [];
+var ReactionsList = [];
 var QuestMultipliers = [2, 5, -10];
 for (const file of commandFiles)
 {
@@ -213,9 +331,18 @@ for (const file of commandFiles)
     bot.commands.set(command.name, command);
     CommandList.push(command.name);
 }
+for (var count = 0; count < ImageReactions.length; count++)
+{
+    ReactionsList.push(ImageReactions[count].substring(0, ImageReactions[count].length - 4));
+}
 bot.on('ready', async () =>
 {
-    let db = new sqlite.Database('./database.db', sqlite.OPEN_READWRITE);
+    bot.emojis.cache.forEach(emoji =>
+    {
+        if (emoji.name != '') return;
+        console.log(`<:${emoji.name}:${emoji.id}>`);
+    });
+    var db = new sqlite.Database('./database.db', sqlite.OPEN_READWRITE);
     console.log('This bot is online!');
     bot.user.setPresence(
         {
@@ -224,7 +351,6 @@ bot.on('ready', async () =>
             }, status: 'online'
         }
     )
-    PayRespects();
     QuestNames = exports.GetPropertyNames(Quests);
     let query = `SELECT * FROM data WHERE is_default = ? `;
     var Row;
@@ -267,8 +393,9 @@ bot.on('ready', async () =>
                 if (row === undefined)
                 {
                     console.log(`server ${guild.name} was undefined`);
-                    let InsertData = db.prepare(`INSERT INTO servers VALUES(?,?,?,?,?)`);
-                    InsertData.run(guild.id, guild.name, guild.memberCount, '{}', '');
+                    let InsertData = db.prepare(`INSERT INTO servers VALUES(?,?,?,?)`);
+                    if (!name) name = 'nothing';
+                    InsertData.run(guild.id, name, guild.memberCount, '{}');
                     InsertData.finalize();
                     db.close();
                     resolve(false);
@@ -313,18 +440,66 @@ bot.on('ready', async () =>
             db.run(`DELETE from servers where id = ?`, [guild_id]);
         }
     }
-    //db.run(`UPDATE servers SET settings = ?`, ['{}']);
+    var SetValues =
+    {
+
+    };
+    var table = `data`;
+    var SetValueNames = exports.GetPropertyNames(SetValues);
+    for (var count = 0; count < Object.keys(SetValues).length; count++)
+    {
+        db.run(`UPDATE ${table} SET ${SetValueNames[count].replace(' ', '_')} = ?`, SetValues[SetValueNames[count]]);
+    }
+    /*query = `SELECT CAST(id AS TEXT), planted_farm FROM data`;
+    promise = new Promise(resolve =>
+    {
+        db.all(query, [], (err, row) =>
+        {
+            if (err)
+            {
+                console.log(err);
+                resolve(false);
+                return;
+            }
+            resolve(row);
+        });
+    })
+    var PlantedFarms = await promise;
+    if (!PlantedFarms)
+    {
+        return;
+    }
+    for (var count = 0; count < PlantedFarms.length; count++)
+    {
+        var new_farm_var =
+        {
+            'corn': PlantedFarms[count]['planted_farm'],
+            'corn harvest': 0,
+            'sugarcane': 0,
+            'sugarcane harvest': 0,
+        };
+        new_farm_var = JSON.stringify(new_farm_var);
+        db.run(`UPDATE data SET planted_farm = ? WHERE id = ?`, [new_farm_var, PlantedFarms[count]['CAST(id AS TEXT)']]);
+    }*/
+
+    //IMPORTANT DO NOT DELETE
+    //USE THIS TO TRANSFER NUMBERS TO JSON TEXT IN LATTEBOT
 });
 bot.on('guildMemberAdd', async member =>
 {
     if (bot.user.username === 'Tester bot') return;
     if (member.guild === null) return;
+    var guild_settings = await GetGuildSettings(member.guild);
+    if (guild_settings['welcoming'] === false)
+    {
+        return;
+    }
     if (SHOW_MEMBERS)
     {
         console.log(`member ${member.user.username} entered guild ${member.guild.name}`);
     }
     let db = new sqlite.Database('./database.db', sqlite.OPEN_READWRITE);
-    var channel = member.guild.channels.cache.find(ch => ch.name === 'welcome' || ch.name === 'new-members' || ch.name === 'member-log' || ch.name === 'milk-hall');
+    var channel = member.guild.systemChannel;
     if (!channel) return;
 
     const canvas = Canvas.createCanvas(936, 474);
@@ -351,7 +526,6 @@ bot.on('guildMemberAdd', async member =>
 
     const attachment = new Discord.MessageAttachment(canvas.toBuffer(), 'welcome-image.png');
 
-    if (!channel) return;
     channel.send(`Welcome to the server, ${member}!
 I hope you get what you deserve...
 
@@ -359,78 +533,23 @@ I hope you get what you deserve...
 });
 bot.on('guildMemberRemove', async member =>
 {
-    if (member.guild === null || member.user.username === 'Tester bot' || member.user.username === 'Lattebot') return;
+    var db = new sqlite.Database('./database.db', sqlite.OPEN_READWRITE);
+    if (bot.user.username === 'Tester bot') return;
+    if (member.guild === null) return;
+    var guild_settings = await GetGuildSettings(member.guild);
+    if (guild_settings['welcoming'] === false)
+    {
+        return;
+    }
     if (SHOW_MEMBERS)
     {
         console.log(`member ${member.user.username} left guild ${member.guild.name}`);
     }
-    if (bot.user.username === 'Tester bot') return;
-    let db = new sqlite.Database('./database.db', sqlite.OPEN_READWRITE);
     var guild = member.guild;
-    var id = guild.id;
-    let query = `SELECT * FROM servers WHERE id = ?`;
-    var dead_people = '';
-    var promise = new Promise((resolve) =>
-    {
-        db.get(query, [id], (err, row) =>
-        {
-            if (err)
-            {
-                console.log(err);
-                resolve(null);
-                return;
-            }
-            if (row === undefined)
-            {
-                console.log(`row was undefined`);
-                let InsertData = db.prepare(`INSERT INTO servers VALUES(?,?,?)`);
-                InsertData.run(/*id*/id, /*name*/guild.name, /*dead_people*/'');
-                InsertData.finalize();
-                db.close();
-                resolve('');
-            }
-            else
-            {
-                resolve(row.dead_people);
-            }
-        });
-    });
-    dead_people = await promise;
-    var People = '';
-    if (dead_people.length > 0)
-    {
-        People = dead_people.split(' | ');
-    }
-    var member_id = member.id;
-    var is_on_list = false;
-    for (var count = 0; count < People.length; count++)
-    {
-        var Properties = People[count].split(' ');
-        var person_id = Properties[0];
-        if (person_id === member_id)
-        {
-            is_on_list = true;
-        }
-    }
-    if (is_on_list === false)
-    {
-        var new_dead = '';
-        if (dead_people.length > 0)
-        {
-            new_dead += ' | ';
-        }
-        new_dead += member.id;
-        new_dead += ' ';
-        new_dead += member.user.username;
-        new_dead += ' ';
-        new_dead += new Date().getTime();
-        db.run(`UPDATE servers SET dead_people = ? where id = ?`, [dead_people + new_dead, id]);
-    }
-    var channel = member.guild.channels.cache.find(ch => ch.name === 'milk-hall' || ch.name === 'testing');
+    var channel = member.guild.systemChannel;
     if (!channel) return;
     var guild = channel.guild;
     var emoji;
-    var grief = ``;
     if (guild.name === 'Kingdom of Latteland' || guild.name === 'Lattebot testing and support')
     {
         emoji = guild.emojis.cache.find(emoji => emoji.name === "milgodsad");
@@ -449,8 +568,8 @@ bot.on('guildCreate', async guild =>
         console.log(`Entered a new guild! ${guild.name}`);
     }
     let db = new sqlite.Database('./database.db', sqlite.OPEN_READWRITE);
-    let InsertData = db.prepare(`INSERT INTO servers VALUES(?,?,?,?,?)`);
-    InsertData.run(guild.id, guild.name, guild.memberCount, '{}', '');
+    let InsertData = db.prepare(`INSERT INTO servers VALUES(?,?,?,?)`);
+    InsertData.run(guild.id, guild.name, guild.memberCount, '{}');
     InsertData.finalize();
     db.close();
 });
@@ -465,7 +584,6 @@ bot.on('guildDelete', async guild =>
 });
 bot.on('message', async message =>
 {
-    var prefix = DEFAULT_PREFIX;
     var is_dm = true;
     var guild_settings;
     var guild = message.guild;
@@ -488,44 +606,15 @@ bot.on('message', async message =>
     }
     if (!is_dm)
     {
-        var query = `SELECT * FROM servers WHERE id = ? `;
-        var promise = new Promise((resolve =>
-        {
-            db.get(query, [guild.id], (err, row) =>
-            {
-                if (err)
-                {
-                    console.log(err);
-                    resolve(false);
-                }
-                resolve(row);
-            });
-        }))
-        var GuildData = await promise;
-        if (!GuildData)
-        {
-            return;
-        }
-        var original_guild_data = GuildData['settings'];
-        guild_settings = JSON.parse(GuildData['settings']);
-        var GuildSettingsNames = exports.GetPropertyNames(GuildSettings);
-        for (var count = 0; count < GuildSettingsNames.length; count++)
-        {
-            var setting_name = GuildSettingsNames[count];
-            if (guild_settings[setting_name] === undefined)
-            {
-                guild_settings[setting_name] = GuildSettings[setting_name];
-            }
-        }
-        var stringified_guild_settings = JSON.stringify(guild_settings);
-        if (original_guild_data === '{}')
-        {
-            db.run(`UPDATE servers SET settings = ? WHERE id = ?`, [stringified_guild_settings, guild.id]);
-        }
+        guild_settings = await GetGuildSettings(guild);
     }
-    prefix = guild_settings['prefix'];
+    else
+    {
+        guild_settings = GuildSettings;
+    }
     var reaction_images = guild_settings['reaction images'];
     var allowed_channels = guild_settings['allowed channels'];
+    var prefix = guild_settings['prefix'];
     var is_allowed = true;
     if (allowed_channels.length > 0)
     {
@@ -553,15 +642,17 @@ bot.on('message', async message =>
                 message.channel.send(`put out ${message.content.toLowerCase().substring(6)} `);
             }
         }
-        else if (message.content.toLowerCase() === 'noice' && reaction_images)
+        if (reaction_images)
         {
-            const attachment = new MessageAttachment('./noice.png');
-            message.channel.send(attachment);
-        }
-        else if (message.content.toLowerCase() === 'bruh' && reaction_images)
-        {
-            const attachment = new MessageAttachment('./bruh.png');
-            message.channel.send(attachment);
+            for (var count = 0; count < ReactionsList.length; count++)
+            {
+                if (message.content.toLowerCase() === ReactionsList[count])
+                {
+                    const attachment = new MessageAttachment('./image_reactions/' + ReactionsList[count] + '.png');
+                    message.channel.send(`\`${message.author.username}:\``, attachment);
+                    message.delete();
+                }
+            }
         }
     }
     if (!is_allowed) return;
@@ -640,6 +731,7 @@ bot.on('message', async message =>
         'Items': Items,
         'version': version,
         'command length': 0,
+        'CommandList': CommandList,
         'is dm': is_dm,
         'player tier': 0,
         'Upgrades': Upgrades,
@@ -650,6 +742,7 @@ bot.on('message', async message =>
         'question marks': question_marks,
         'Variables': Variables,
         'guild settings': guild_settings,
+        'bot': bot,
     };
     for (var count = 0; count < Object.keys(Variables).length; count++)
     {
@@ -683,22 +776,16 @@ bot.on('message', async message =>
     Items['animal feed']['buy price'] = 1.2 + exports.GetUpgrade(1) * 1.8;
     vars['ItemNames'] = exports.GetPropertyNames(Items);
     vars['UpgradeNames'] = exports.GetPropertyNames(Upgrades);
+    vars['Farmables'] = exports.GetPropertyNames(JSON.parse(vars['planted farm']), true);
     for (var count = 0; count < Object.keys(Quests).length; count++)
     {
         Quests[QuestNames[count]]['reward'] = QuestMultipliers[count] * exports.GetNetWoth() / 200;
     }
     p_vars = vars;
-    var ResultList = exports.AutoFill(message, args[0], CommandList);
-    if (ResultList === null)
-    {
-        return null;
-    }
-    ResultList = ResultList[0];
-    if (ResultList.length === 1)
-    {
-        vars['command length'] = args[0].length;
-        bot.commands.get(ResultList.toString()).execute(vars);
-    }
+    var ResultList = exports.AutoFill(args[0], CommandList);
+    if (ResultList === null) return null;
+    vars['command length'] = args[0].length;
+    bot.commands.get(ResultList).execute(vars);
 
 })
 bot.login(token);
@@ -751,60 +838,44 @@ function Mify(message)
     message.channel.send(new_message);
     return;
 }
-function PayRespects()
+async function GetGuildSettings(guild)
 {
-    let db = new sqlite.Database('./database.db', sqlite.OPEN_READWRITE);
-    let query = `SELECT CAST(id AS TEXT), CAST(dead_people AS TEXT) FROM servers`;
-    var time = new Date().getTime();
-    setTimeout(function () 
+    var db = new sqlite.Database('./database.db', sqlite.OPEN_READWRITE);
+    var query = `SELECT * FROM servers WHERE id = ? `;
+    var promise = new Promise((resolve =>
     {
-        db.all(query, [], (err, row) =>
+        db.get(query, [guild.id], (err, row) =>
         {
             if (err)
             {
                 console.log(err);
-                return;
+                resolve(false);
             }
-            var guilds = bot.guilds.cache;
-            for (var count = 0; count < row.length; count++)
-            {
-                var guild_id = row[count]['CAST(id AS TEXT)'].toString();
-                var guild = guilds.get(guild_id);
-                if (!guild) continue;
-                var channel = guild.channels.cache.find(ch => ch.name === 'graveyard');
-                if (channel)
-                {
-                    var message = ``;
-                    var dead_people = row[count]['CAST(dead_people AS TEXT)'].toString();
-                    var People = '';
-                    if (dead_people.length > 0)
-                    {
-                        People = dead_people.split(' | ');
-                    }
-                    for (var count = 0; count < People.length; count++)
-                    {
-                        var person = People[count].split(' ');
-                        var leave_time = person[person.length - 1];
-                        var time_gone = time - leave_time;
-                        var days_gone = exports.SecToHMS(time_gone / 1000);
-                        var person_name = ``;
-                        var days_or_day = ``;
-                        for (var scount = 1; scount < person.length - 1; scount++)
-                        {
-                            person_name += `${person[scount]} `;
-                        }
-                        person_name = person_name.substring(0, person_name.length - 1);
-                        message += `Rip **\`${person_name}\`**. It's been \`${days_gone}\` ${days_or_day} since they left us. :sob:\n`;
-                    }
-                    if (message.length > 0)
-                    {
-                        channel.send(message);
-                    }
-                }
-            }
+            resolve(row);
         });
-        PayRespects();
-    }, exports.SecondsUntilTime(TIME_OF_RESPECT) * 1000 + 2000);
+    }))
+    var GuildData = await promise;
+    if (!GuildData)
+    {
+        return;
+    }
+    var original_guild_data = GuildData['settings'];
+    guild_settings = JSON.parse(GuildData['settings']);
+    var GuildSettingsNames = exports.GetPropertyNames(GuildSettings);
+    for (var count = 0; count < GuildSettingsNames.length; count++)
+    {
+        var setting_name = GuildSettingsNames[count];
+        if (guild_settings[setting_name] === undefined)
+        {
+            guild_settings[setting_name] = GuildSettings[setting_name];
+        }
+    }
+    var stringified_guild_settings = JSON.stringify(guild_settings);
+    if (original_guild_data != stringified_guild_settings)
+    {
+        db.run(`UPDATE servers SET settings = ? WHERE id = ?`, [stringified_guild_settings, guild.id]);
+    }
+    return guild_settings;
 }
 exports.Say = function (message, Title, description, colour, display_avatar, second_title, second_description, third_title, third_description)
 {
@@ -900,17 +971,10 @@ exports.GetItem = function ()
     if (NumberPosition < 0)
     {
         item = message.content.substring(args[0].length + 2);
-        var MaxOrAllList = exports.AutoFill(message, args[1], [`max`, `all`], false);
-        if (MaxOrAllList === null)
-        {
-            return null;
-        }
-        MaxOrAllList = MaxOrAllList[0];
-        if (MaxOrAllList.length === 1)
-        {
-            IsMax = true;
-            item = item.substring(args[1].length + 1);
-        }
+        var MaxOrAllList = exports.AutoFill(args[1], [`max`, `all`], false);
+        if (MaxOrAllList === null) return null;
+        IsMax = true;
+        item = item.substring(args[1].length + 1);
         number = 1;
     }
     else
@@ -918,14 +982,8 @@ exports.GetItem = function ()
         item = message.content.substring(args[0].length + args[1].length + 3);
         number = exports.ConvertToNumber(args[1]);
     }
-    var NumberInList = 0;
-    var ResultList = exports.AutoFill(message, item, ItemNames);
-    if (ResultList === null)
-    {
-        return null;
-    }
-    NumberInList = ResultList[1];
-    ResultList = ResultList[0];
+    var ResultList = exports.AutoFill(item, ItemNames);
+    if (ResultList === null) return null;
     if (number < 0)
     {
         message.channel.send(`${message.member.user.username} you can't fool me`);
@@ -937,16 +995,7 @@ exports.GetItem = function ()
         return null;
     }
     number = Math.floor(number);
-    if (NumberInList === null)
-    {
-        return null;
-    }
-    if (NumberInList < 0)
-    {
-        message.channel.send(`I don't sell ${item}`);
-        return null;
-    }
-    return [ResultList, number, NumberInList, IsMax];
+    return [ResultList, number, IsMax];
 }
 exports.GetName = function ()
 {
@@ -1126,8 +1175,9 @@ exports.ConvertToUnit = function (number, units)
         return number;
     }
 }
-exports.AutoFill = function (message, phrase, PhraseList, ShowList)
+exports.AutoFill = function (phrase, PhraseList, ShowList)
 {
+    var message = p_vars['message'];
     if (ShowList === undefined)
     {
         ShowList = true;
@@ -1180,12 +1230,14 @@ exports.AutoFill = function (message, phrase, PhraseList, ShowList)
         {
             phrase = ' ';
         }
-        message.channel.send(`There are \`${ResultList.length}\` things that start with \`${phrase}\`. Maybe be a bit more specific? Here's the list:
-${ListOfThings}
-        `)
+        message.channel.send(`There are \`${ResultList.length}\` things that start with \`${phrase}\`. Maybe be a bit more specific? Here's the list:\n${ListOfThings}`);
         return null;
     }
-    return [ResultList, NumberInList];
+    if (ResultList.length >= 1)
+    {
+        return ResultList[0].toString();
+    }
+    return null;
 }
 exports.StringReplace = function (string, position, character)
 {
@@ -1202,12 +1254,21 @@ exports.CapitalFirst = function (string)
 {
     return string.charAt(0).toUpperCase() + string.substring(1);
 }
-exports.GetUpgrade = function (upgrade_slot)
+exports.GetUpgrade = function (upgrade_slot, optional_data)
 {
-    var upgrades = p_vars['upgrades'];
-    var id = p_vars['id'];
-    var db = p_vars['db'];
-    var upgrade_list_length = exports.GetPropertyNames(p_vars['Upgrades']);
+    var data;
+    if (optional_data === undefined)
+    {
+        data = p_vars;
+    }
+    else
+    {
+        data = optional_data;
+    }
+    var upgrades = data['upgrades'];
+    var id = data['id'];
+    var db = data['db'];
+    var upgrade_list_length = exports.GetPropertyNames(p_vars['Upgrades']).length;
     var upgrade_list = upgrades.toString().split(' ');
     if (upgrade_list.length < upgrade_list_length)
     {
@@ -1220,6 +1281,7 @@ exports.GetUpgrade = function (upgrade_slot)
         db.run(`UPDATE data set upgrades = ? WHERE id = ?`, [new_upgrade_list, id]);
         exports.UpdateVars('upgrades', new_upgrade_list);
     }
+    var upgrade_list = data['upgrades'].toString().split(' ');
     return Number(upgrade_list[upgrade_slot]);
 }
 exports.GetUpgraded = function (upgrade_slot, amount)
@@ -1290,9 +1352,14 @@ exports.SecToHMS = function (seconds)
     }
     return hour_min_sec;
 }
-exports.ConvertToNumber = function (number_with_unit)
+exports.ConvertToNumber = function (number_with_unit, show)
 {
     var message = p_vars['message'];
+    if (number_with_unit === undefined)
+    {
+        message.channel.send(`I need a number`);
+        return NaN;
+    }
     var number = Number(number_with_unit.substring(0, number_with_unit.length - 1));
     if (number < 0)
     {
@@ -1305,10 +1372,18 @@ exports.ConvertToNumber = function (number_with_unit)
     }
     if (number_with_unit.length < 2)
     {
+        if (show)
+        {
+            message.channel.send(`\`${number_with_unit}\` is not a number`);
+        }
         return NaN;
     }
     if (isNaN(Number(number_with_unit.substring(0, number_with_unit.length - 1))) === true)
     {
+        if (show)
+        {
+            message.channel.send(`\`${number_with_unit}\` is not a number`);
+        }
         return NaN;
     }
 
@@ -1355,31 +1430,51 @@ exports.UpdateVars = function (var_name, value)
     vars[var_name] = value;
     p_vars[var_name] = value;
 }
-exports.GetPropertyNames = function (data)
+exports.GetPropertyNames = function (data, should_alternate)
 {
+    if (should_alternate === undefined)
+    {
+        should_alternate = false;
+    }
+
     var PropertyNames = [];
+    var count = 0;
     for (var prop in data)
     {
+        count++;
         var propName = prop;
+        if (should_alternate)
+        {
+            if (count % 2 === 0) continue;
+        }
         //var propVal = data[prop];
         PropertyNames.push(propName);
     }
     return PropertyNames;
 }
-exports.GetNetWoth = function ()
+exports.GetNetWoth = function (optional_data)
 {
+    var data;
+    if (optional_data === undefined)
+    {
+        data = p_vars;
+    }
+    else
+    {
+        data = optional_data;
+    }
     var value = 0;
     var ItemNames = p_vars['ItemNames'];
     for (var count = 0; count < Object.keys(Items).length; count++)
     {
         var item_name = ItemNames[count];
-        value += p_vars[item_name] * Items[item_name]['sell price'];
+        value += data[item_name] * Items[item_name]['sell price'];
     }
     var UpgradeNames = p_vars['UpgradeNames'];
     for (var count = 0; count < Object.keys(Upgrades).length; count++)
     {
         var upgrade_name = UpgradeNames[count];
-        var upgrade_value = exports.GetUpgrade(count);
+        var upgrade_value = exports.GetUpgrade(count, optional_data);
         for (var scount = 0; scount < upgrade_value; scount++)
         {
             value += Upgrades[upgrade_name]['prices'][scount];
@@ -1409,4 +1504,92 @@ exports.SecondsUntilTime = function ([hours, minutes, seconds])
 exports.InsertString = function (string1, string2, position)
 {
     return string1.substring(0, position) + string2 + string1.substring(position);
+}
+exports.GetWasteDeficiency = function ()
+{
+    var current_waste_num = 1.5;
+    var waste_deficiency = 0;
+    var waste_barrel = p_vars['waste barrel'];
+    for (var count = 0; count <= 100; count++)
+    {
+        if (waste_barrel > current_waste_num)
+        {
+            current_waste_num *= 1.5;
+        }
+        else
+        {
+            waste_deficiency = count;
+            break;
+        }
+    }
+    return waste_deficiency;
+}
+exports.ReportMember = async function (snitch, target)
+{
+    var message = p_vars['message'];
+    var db = new sqlite.Database('./database.db', sqlite.OPEN_READWRITE);
+    var query = `SELECT * FROM data WHERE id = ? `;
+    var promise = new Promise((resolve =>
+    {
+        db.get(query, [snitch.id], (err, row) =>
+        {
+            if (err)
+            {
+                console.log(err);
+                resolve(true);
+                return;
+            }
+            resolve(row);
+        });
+    }))
+    var has_error = await promise;
+    if (!has_error) return;
+    var SnitchData = has_error;
+    var SnitchDataNames = exports.GetPropertyNames(SnitchData);
+    for (var count = 0; count < SnitchDataNames.length; count++)
+    {
+        SnitchData[SnitchDataNames[count].replace('_', ' ')] = SnitchData[SnitchDataNames[count]];
+    }
+    query = `SELECT * FROM data WHERE id = ? `;
+    promise = new Promise((resolve =>
+    {
+        db.get(query, [target.id], (err, row) =>
+        {
+            if (err)
+            {
+                console.log(err);
+                resolve(true);
+                return;
+            }
+            resolve(row);
+        });
+    }))
+    has_error = await promise;
+    if (!has_error) return;
+    var TargetData = has_error;
+    var TargetDataNames = exports.GetPropertyNames(SnitchData);
+    for (var count = 0; count < TargetDataNames.length; count++)
+    {
+        TargetData[TargetDataNames[count].replace('_', ' ')] = TargetData[TargetDataNames[count]];
+    }
+    if (TargetData['last dumped'] > 0)
+    {
+        var fine = exports.GetNetWoth(TargetData) / 5;
+        message.channel.send(`Hey ${target}, f\\*\\*\\* you. Polluting the oceans like an imbecile. Here's a \`${exports.ConvertToUnit(fine)}\` milkesh fine. **HOW'D YOU LIKE THAT PUNK!!!** \n\nAs for you ${snitch}, here's your reward for being a snitch: \`${exports.ConvertToUnit(fine / 100 * 75)}\``);
+        if (target.user.id === snitch.user.id)
+        {
+            db.run(`UPDATE data SET balance = ?, last_dumped = ? WHERE id = ?`, [Number(TargetData['balance']) - Number(fine / 100 * 25), 0, target.user.id]);
+        }
+        else
+        {
+            db.run(`UPDATE data SET balance = ?, last_dumped = ? WHERE id = ?`, [Number(TargetData['balance']) - Number(fine), 0, target.user.id]);
+            db.run(`UPDATE data SET balance = ? WHERE id = ?`, [Number(SnitchData['balance']) + Number(fine / 100 * 75), snitch.user.id]);
+        }
+    }
+    else
+    {
+        var fine = exports.GetNetWoth() / 100 * 25;
+        message.channel.send(`Hey ${snitch}, f\\*\\*\\* you. Trying to frame ${target.user.username} \`${exports.ConvertToUnit(fine)}\` milkesh fine. **HOW'D YOU LIKE THAT PUNK!!!**`);
+        db.run(`UPDATE data SET balance = ? WHERE id = ?`, [Number(SnitchData['balance']) - Number(fine), snitch.user.id]);
+    }
 }

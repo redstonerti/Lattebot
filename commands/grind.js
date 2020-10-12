@@ -13,11 +13,6 @@ module.exports = {
         var db = vars['db'];
         var id = vars['id'];
         var battery = vars['battery'];
-        var solar_panel = vars['solar panel'];
-        var wind_turbine = vars['wind turbine'];
-        var time = vars['time'];
-        var last_powered = vars['last powered'];
-        var MessageInfo = ``;
         var AmountPasteurized = 0;
         watts = funcs.CalcPower();
         if (corn <= 0)
@@ -36,7 +31,7 @@ module.exports = {
             return;
         }
         AmountPasteurized = Math.min(Math.floor(watts / 1000), grinder, corn / 100);
-        message.channel.send(`You used \`${funcs.ConvertToUnit(AmountPasteurized, 'K M B')}\` grinders (\`${funcs.ConvertToUnit(AmountPasteurized * 1000, 'K M G')}W\`) and made \`${funcs.ConvertToUnit(AmountPasteurized * 100, 'K M B')}\` animal feed.\nYou now have:\n\`${funcs.ConvertToUnit(corn - AmountPasteurized * 100, 'K M B')}\` corn\n\`${funcs.ConvertToUnit(animal_feed + AmountPasteurized * 100, 'K M B')}\` animal feed\n\`${funcs.ConvertToUnit(watts - AmountPasteurized * 1000, 'K M G')}W / ${funcs.ConvertToUnit(battery * 10000, 'K M G')}W\``);
+        message.channel.send(`You used \`${funcs.ConvertToUnit(AmountPasteurized)}\` grinders (\`${funcs.ConvertToUnit(AmountPasteurized * 1000)}W\`) and made \`${funcs.ConvertToUnit(AmountPasteurized * 100)}\` animal feed.\nYou now have:\n\`${funcs.ConvertToUnit(corn - AmountPasteurized * 100)}\` corn\n\`${funcs.ConvertToUnit(animal_feed + AmountPasteurized * 100)}\` animal feed\n\`${funcs.ConvertToUnit(watts - AmountPasteurized * 1000, 'K M G')}W / ${funcs.ConvertToUnit(battery * 10000, 'K M G')}W\``);
         db.run(`UPDATE data SET corn = ? WHERE id = ?`, [(corn - AmountPasteurized * 100).toFixed(2), id]);
         db.run(`UPDATE data SET animal_feed = ? WHERE id = ?`, [Number((animal_feed + AmountPasteurized * 100)).toFixed(2), id]);
         db.run(`UPDATE data SET watts = ? WHERE id = ?`, [(watts - AmountPasteurized * 1000).toFixed(2), id]);

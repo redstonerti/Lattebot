@@ -90,14 +90,14 @@ module.exports = {
                                 InsertData.finalize();
                                 db.close();
                                 db.run(`UPDATE data SET balance = ? WHERE id = ?`, [(balance - AmountToTransfer).toFixed(2), id]);
-                                message.channel.send(`${message.member.user.username} now has \`${funcs.ConvertToUnit(balance - AmountToTransfer, `K M B`)} ${ItemType}\`\n${PersonWithRequestedName.user.username} now has \`${funcs.ConvertToUnit(AmountToTransfer, `K M B`)} ${ItemType}\``);
+                                message.channel.send(`${message.member.user.username} now has \`${funcs.ConvertToUnit(balance - AmountToTransfer)} ${ItemType}\`\n${PersonWithRequestedName.user.username} now has \`${funcs.ConvertToUnit(AmountToTransfer)} ${ItemType}\``);
                                 return;
                             }
                             else
                             {
                                 db.run(`UPDATE data SET balance = ? WHERE id = ?`, [(balance - AmountToTransfer).toFixed(2), id]);
                                 db.run(`UPDATE data SET balance = ? WHERE id = ?`, [(row.balance + AmountToTransfer).toFixed(2), PersonWithRequestedName.id]);
-                                message.channel.send(`${message.member.user.username} now has \`${funcs.ConvertToUnit(balance - AmountToTransfer, `K M B`)} ${ItemType}\`\n${PersonWithRequestedName.user.username} now has \`${funcs.ConvertToUnit(row.balance + AmountToTransfer, `K M B`)} ${ItemType}\``);
+                                message.channel.send(`${message.member.user.username} now has \`${funcs.ConvertToUnit(balance - AmountToTransfer)} ${ItemType}\`\n${PersonWithRequestedName.user.username} now has \`${funcs.ConvertToUnit(row.balance + AmountToTransfer)} ${ItemType}\``);
                             }
                         });
                     }

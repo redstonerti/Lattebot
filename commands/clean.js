@@ -36,7 +36,7 @@ module.exports = {
             return;
         }
         AmountPasteurized = Math.min(Math.floor(watts / 1000), pasteurizer, milk / 100);
-        message.channel.send(`You used \`${funcs.ConvertToUnit(AmountPasteurized, 'K M B')}\` pasteurizers (\`${funcs.ConvertToUnit(AmountPasteurized * 1000, 'K M G')}W\`) and made \`${funcs.ConvertToUnit(AmountPasteurized * 100, 'K M B')}\` clean milk.\nYou now have:\n\`${funcs.ConvertToUnit(milk - AmountPasteurized * 100, 'K M B')}\` milk\n\`${funcs.ConvertToUnit(clean_milk + AmountPasteurized * 100, 'K M B')}\` clean milk\n\`${funcs.ConvertToUnit(watts - AmountPasteurized * 1000, 'K M G')}W / ${funcs.ConvertToUnit(battery * 10000, 'K M G')}W\``);
+        message.channel.send(`You used \`${funcs.ConvertToUnit(AmountPasteurized)}\` pasteurizers (\`${funcs.ConvertToUnit(AmountPasteurized * 1000, 'K M G')}W\`) and made \`${funcs.ConvertToUnit(AmountPasteurized * 100)}\` clean milk.\nYou now have:\n\`${funcs.ConvertToUnit(milk - AmountPasteurized * 100)}\` milk\n\`${funcs.ConvertToUnit(clean_milk + AmountPasteurized * 100)}\` clean milk\n\`${funcs.ConvertToUnit(watts - AmountPasteurized * 1000, 'K M G')}W / ${funcs.ConvertToUnit(battery * 10000, 'K M G')}W\``);
         db.run(`UPDATE data SET milk = ? WHERE id = ?`, [(milk - AmountPasteurized * 100).toFixed(2), id]);
         db.run(`UPDATE data SET clean_milk = ? WHERE id = ?`, [(clean_milk + AmountPasteurized * 100).toFixed(2), id]);
         db.run(`UPDATE data SET watts = ? WHERE id = ?`, [(watts - AmountPasteurized * 1000).toFixed(2), id]);

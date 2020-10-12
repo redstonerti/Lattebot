@@ -42,12 +42,8 @@ module.exports = {
             variable += ` ${args[count]}`;
         }
         variable = variable.substring(1);
-        variable = funcs.AutoFill(message, variable, VariableNames);
-        if (variable === null)
-        {
-            return;
-        }
-        variable = variable[0].toString();
+        variable = funcs.AutoFill(variable, VariableNames);
+        if (variable === null) return;
         query = `SELECT name, ${variable} FROM data ORDER BY ${variable.replace(' ', '_')} DESC`;
         promise = new Promise(reslove =>
         {

@@ -5,27 +5,24 @@ module.exports = {
     description: "says pong!",
     execute(vars)
     {
+        var message = vars['message'];
+        var args = vars['args'];
+        var db = vars['db'];
+        var guild_settings = vars['guild settings'];
         if (vars['is dm']) 
         {
             vars['message'].channel.send(`❌ This command cannot be used in dms as it relies on being in a guild to function ❌`);
             return;
         }
-        var message = vars['message'];
-        var args = vars['args'];
-        var guild = message.guild;
         if (!message.member.hasPermission('ADMINISTRATOR') && message.author.id != 422492063574130688)
         {
-            message.channel.send(`<:megathink:739036702047469670> You do not have administrator permissions in this server. SKIDDADLE OUTA HERE. <:jail:739035711096750081>`);
+            message.channel.send(`<:megathink:739036702047469670> You do not have administrator permissions in this server. SKIDDADLE OUTTA HERE. <:jail:739035711096750081>`);
             return;
         }
-        var db = vars['db'];
-        var id = vars['id'];
-        var guild_settings = vars['guild settings'];
         if (args.length > 1)
         {
-            var setting = funcs.AutoFill(message, args[1], ['prefix', 'reactions', 'allowed']);
+            var setting = funcs.AutoFill(args[1], ['prefix', 'reactions', 'allowed', 'welcoming']);
             if (setting === null) return;
-            setting = setting[0].toString();
             switch (setting)
             {
                 case ('prefix'):
@@ -37,12 +34,12 @@ module.exports = {
                     {
                         message.channel.send(`Set your prefix to something normal please. Not just empty space`);
                         return;
+
                     }
                     break;
                 case ('reactions'):
-                    var state = funcs.AutoFill(message, args[2], ['true', 'false']);
+                    var state = funcs.AutoFill(args[2], ['true', 'false']);
                     if (state === null) return;
-                    state = state[0].toString();
                     if (state === 'true')
                     {
                         guild_settings['reaction images'] = true;
@@ -52,10 +49,21 @@ module.exports = {
                         guild_settings['reaction images'] = false;
                     }
                     break;
+                case ('welcoming'):
+                    var state = funcs.AutoFill(args[2], ['true', 'false']);
+                    if (state === null) return;
+                    if (state === 'true')
+                    {
+                        guild_settings['welcoming'] = true;
+                    }
+                    else if (state === 'false')
+                    {
+                        guild_settings['welcoming'] = false;
+                    }
+                    break;
                 case ('allowed'):
-                    var add_or_remove = funcs.AutoFill(message, args[2], ['add', 'remove']);
+                    var add_or_remove = funcs.AutoFill(args[2], ['add', 'remove']);
                     if (add_or_remove === null) return;
-                    add_or_remove = add_or_remove[0].toString();
                     var channel_name = ``;
                     for (var count = 3; count < args.length; count++)
                     {
@@ -108,6 +116,7 @@ module.exports = {
         }
         var reaction_images = guild_settings['reaction images'];
         var allowed_channels = guild_settings['allowed channels'];
+        var welcoming = guild_settings['welcoming'];
         var allowed_channels_display = ``;
         if (allowed_channels.length === 0)
         {
@@ -124,14 +133,14 @@ module.exports = {
         var menu = `
         Prefix: \`${prefix}\`
         Reaction images: \`${reaction_images}\`
+        Welcoming: \`${welcoming}\`
         Allowed channels:
-        ${allowed_channels_display}
-                `;
+        ${allowed_channels_display}`;
         var instructions = `
         ${prefix}settings prefix <\`anything\`>
         ${prefix}settings reactions <\`true\` or \`false\`>
-        ${prefix}settings allowed <\`channel\`> <\`add\` or \`remove\`> <\`channel\`>
-                `;
+        ${prefix}settings welcoming <\`true\` or \`false\`>
+        ${prefix}settings allowed <\`channel\`> <\`add\` or \`remove\`> <\`channel\`>`;
         funcs.Say(message, `⚙️ Server settings ⚙️`, ``, undefined, undefined, `Settings`, menu, `Instructions`, instructions);
         db.run(`UPDATE servers SET settings = ? WHERE id = ?`, [JSON.stringify(guild_settings), message.guild.id]);
     }

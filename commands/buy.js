@@ -35,13 +35,17 @@ module.exports = {
         }
         item = ItemStuff[0].toString();
         var ItemTier = Items[item]['tier'];
-        var NumberInList = ItemStuff[2];
-        var IsMax = ItemStuff[3];
+        var IsMax = ItemStuff[2];
         var BuyPrice = Items[item]['buy price'];
         var amount = 0;
+        var item_cap = Items[item]['cap']
         if (IsMax === true)
         {
-            amount = Math.min(Math.floor(balance / BuyPrice), Items[item]['cap'] - vars[item]);
+            amount = Math.floor(balance / BuyPrice);
+            if (item_cap != null)
+            {
+                amount = Math.min(amount, item_cap - vars[item]);
+            }
         }
         else
         {
@@ -63,9 +67,9 @@ module.exports = {
             return;
         }
         amount = Math.floor(amount);
-        if (vars[item] >= Items[item]['cap'] && Items[item]['cap'] != null)
+        if (vars[item] >= item_cap && item_cap != null)
         {
-            message.channel.send(`You already have the max amount of ${item} (\`${funcs.ConvertToUnit(Items[item]['cap'])}\`)`);
+            message.channel.send(`You already have the max amount of ${item} (\`${funcs.ConvertToUnit(item_cap)}\`)`);
             return;
         }
         if (amount < 0)
@@ -80,9 +84,9 @@ module.exports = {
         }
         var CurrentItemAmount = Number(vars[item.toString()]);
         var IsAtCap = ``;
-        if (amount + CurrentItemAmount > Items[item]['cap'] && Items[item]['cap'] != null)
+        if (amount + CurrentItemAmount > item_cap && item_cap != null)
         {
-            amount = Math.min(Items[item]['cap'] - CurrentItemAmount, Math.floor(balance / BuyPrice));
+            amount = Math.min(item_cap - CurrentItemAmount, Math.floor(balance / BuyPrice));
             IsAtCap = `\nYou're now at the max!`;
         }
         var total = BuyPrice * amount;

@@ -35,7 +35,7 @@ module.exports = {
         for (var count = 0; count < quest_options.length; count++)
         {
             var quest_name = quest_options[count];
-            quest_options_display += `**${count + 1}.** ${funcs.CapitalFirst(quest_name)}\nReward: \`${funcs.ConvertToUnit(Math.abs(Quests[quest_name]['reward']), `K M B`)}\`\nTime: \`${funcs.SecToHMS(Quests[quest_name]['wait time'])}\`\n\n`;
+            quest_options_display += `**${count + 1}.** ${funcs.CapitalFirst(quest_name)}\nReward: \`${funcs.ConvertToUnit(Math.abs(Quests[quest_name]['reward']))}\`\nTime: \`${funcs.SecToHMS(Quests[quest_name]['wait time'])}\`\n\n`;
         }
         funcs.Say(message, `Quest options`, quest_options_display);
         // `m` is a message object that will be passed through the filter function
@@ -62,15 +62,8 @@ module.exports = {
             var IsNum = false;
             if (isNaN(Number(m.content)))
             {
-                quest_accepted = funcs.AutoFill(message, m.content, quest_options, true);
-                if (quest_accepted === null)
-                {
-                    return;
-                }
-                else
-                {
-                    quest_accepted = quest_accepted[0].toString();
-                }
+                quest_accepted = funcs.AutoFill(m.content, quest_options, true);
+                if (quest_accepted === null) return;
             }
             else
             {
@@ -151,7 +144,7 @@ function StartQuest(message, Quests, vars, quest)
         case 'punch an elderly person':
             won_game = true;
             StopReason = ``;
-            end_message = `Wow, you really are a piece of shit.\nYou really thought i was going to give you \`${funcs.ConvertToUnit(Math.abs(Quests[quest]['reward']), `K M B`)}\` milkesh for punching an elderly???\nGo jump off a bridge.`;
+            end_message = `Wow, you really are a piece of shit.\nYou really thought i was going to give you \`${funcs.ConvertToUnit(Math.abs(Quests[quest]['reward']))}\` milkesh for punching an elderly???\nGo jump off a bridge.`;
             break;
         case 'higher lower game':
             var number = funcs.RandomInt(1, 10000);
@@ -351,7 +344,7 @@ function StartQuest(message, Quests, vars, quest)
         {
             time_info = `You had \`${funcs.SecToHMS(WaitTime - (time - start_time))}\` left\n`;
         }
-        message.channel.send(`${end_message}\n\n${time_info}You ${lost_or_gained} \`${funcs.ConvertToUnit(reward, `K M B`)}\`\nYou now have \`${funcs.ConvertToUnit(balance + reward, `K M B`)}\``);
+        message.channel.send(`${end_message}\n\n${time_info}You ${lost_or_gained} \`${funcs.ConvertToUnit(reward)}\`\nYou now have \`${funcs.ConvertToUnit(balance + reward)}\``);
         db.run(`UPDATE data SET balance = ? WHERE id = ?`, [balance + reward, id]);
     });
 }
